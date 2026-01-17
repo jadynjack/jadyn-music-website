@@ -1,8 +1,8 @@
+import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Music, Play, Heart, ChevronRight, Send, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import { useLocation } from "wouter";
 import portraitImage from "@assets/generated_images/portrait_of_a_female_musician_for_album_cover.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -15,10 +15,10 @@ const CHARITIES = [
 
 export default function Vote() {
   const [, setLocation] = useLocation();
-  const [selectedCharity, setSelectedCharity] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [hasVoted, setHasVoted] = useState(false);
+  const [selectedCharity, setSelectedCharity] = React.useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [email, setEmail] = React.useState("");
+  const [hasVoted, setHasVoted] = React.useState(false);
 
   const handleVoteClick = (id: string) => {
     if (hasVoted) return;
