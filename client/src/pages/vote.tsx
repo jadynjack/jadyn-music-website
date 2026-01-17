@@ -1,0 +1,180 @@
+import { motion, AnimatePresence } from "framer-motion";
+import { ExternalLink, Music, Play, Heart, ChevronRight, Send, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { useLocation } from "wouter";
+import portraitImage from "@assets/generated_images/portrait_of_a_female_musician_for_album_cover.png";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+
+const CHARITIES = [
+  { id: "music-cares", name: "Music Cares", initialVotes: 45 },
+  { id: "save-the-music", name: "Save The Music", initialVotes: 30 },
+  { id: "girls-rock", name: "Girls Rock Camp", initialVotes: 25 },
+];
+
+export default function Vote() {
+  const [, setLocation] = useLocation();
+  const [selectedCharity, setSelectedCharity] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [hasVoted, setHasVoted] = useState(false);
+
+  const handleVoteClick = (id: string) => {
+    if (hasVoted) return;
+    setSelectedCharity(id);
+    setIsModalOpen(true);
+  };
+
+  const handleVoteSubmit = () => {
+    if (!email) return;
+    setIsModalOpen(false);
+    setHasVoted(true);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[#050608] relative overflow-hidden">
+      {/* Background Ambient Effects */}
+      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none" />
+
+      {/* Main Card Container */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-[380px] bg-[#12141c] rounded-[32px] border border-white/5 shadow-2xl overflow-hidden relative mx-auto"
+      >
+        {/* Profile / Hero Section */}
+        <div className="relative h-[400px] w-full">
+          <div className="absolute inset-0">
+            <img 
+              src={portraitImage} 
+              className="w-full h-full object-cover opacity-80"
+              alt="Vanya"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#12141c] via-[#12141c]/40 to-transparent" />
+          </div>
+
+          <div className="absolute top-8 left-0 right-0 text-center z-10">
+            <h1 className="font-display text-2xl font-bold tracking-[0.2em] text-white uppercase">Vanya</h1>
+          </div>
+
+          <div className="absolute bottom-0 left-0 right-0 p-8 pt-20 flex flex-col items-center text-center z-10">
+            <h2 className="font-display text-4xl font-black italic tracking-tighter text-white mb-2 uppercase">Vote For Charity</h2>
+            <p className="text-white/60 text-xs font-medium tracking-wide max-w-[200px]">Which charity should receive the tour proceeds?</p>
+          </div>
+        </div>
+
+        {/* Content Section */}
+        <div className="px-5 pb-8 space-y-4">
+          <AnimatePresence mode="wait">
+            {!hasVoted ? (
+              <motion.div 
+                key="voting"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-3"
+              >
+                {CHARITIES.map((charity, index) => (
+                  <motion.button
+                    key={charity.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    onClick={() => handleVoteClick(charity.id)}
+                    className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98] ${
+                      selectedCharity === charity.id 
+                        ? "bg-primary/10 border-primary/50 text-primary" 
+                        : "bg-[#1a1d26] border-white/5 text-white/90 hover:border-white/10"
+                    }`}
+                  >
+                    <span className="text-sm font-bold uppercase tracking-wider">{charity.name}</span>
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedCharity === charity.id ? "border-primary bg-primary" : "border-white/10"}`}>
+                      {selectedCharity === charity.id && <div className="w-2 h-2 bg-black rounded-full" />}
+                    </div>
+                  </motion.button>
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="results"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-[#1a1d26] rounded-2xl p-6 border border-white/5 space-y-6"
+              >
+                <div className="text-center space-y-1">
+                  <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 mb-2">
+                    <CheckCircle2 className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-bold text-white uppercase tracking-tighter">Vote Recorded</h3>
+                  <p className="text-[10px] text-white/40 uppercase tracking-widest">Current Standing</p>
+                </div>
+
+                <div className="space-y-5">
+                  {CHARITIES.map((charity) => {
+                    const isSelected = charity.id === selectedCharity;
+                    const percentage = isSelected ? charity.initialVotes + 1 : charity.initialVotes;
+                    return (
+                      <div key={charity.id} className="space-y-2">
+                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
+                          <span className={isSelected ? "text-primary" : "text-white/60"}>
+                            {charity.name} {isSelected && "(Your Vote)"}
+                          </span>
+                          <span className="text-white">{percentage}%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${percentage}%` }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className={`h-full rounded-full ${isSelected ? "bg-primary shadow-[0_0_10px_rgba(45,212,191,0.5)]" : "bg-white/20"}`}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <Button 
+                  onClick={() => setLocation("/")}
+                  variant="ghost" 
+                  className="w-full text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white"
+                >
+                  Back to Profile
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+
+      {/* Vote Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="bg-[#12141c] border-white/10 text-white rounded-[2rem] max-w-[340px]">
+          <DialogHeader className="space-y-3">
+            <DialogTitle className="text-xl font-display font-bold italic uppercase italic">Confirm Your Vote</DialogTitle>
+            <DialogDescription className="text-white/40 text-xs">
+              Please enter your email to finalize your vote for {CHARITIES.find(c => c.id === selectedCharity)?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <Input 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email" 
+              className="bg-black/20 border-white/5 h-12 text-sm text-white placeholder:text-white/20 rounded-xl"
+            />
+            <Button 
+              onClick={handleVoteSubmit}
+              disabled={!email}
+              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(45,212,191,0.3)] transition-all active:scale-95"
+            >
+              Vote Now
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

@@ -2,9 +2,12 @@ import { motion } from "framer-motion";
 import { ExternalLink, Music, Play, Heart, ChevronRight, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useLocation } from "wouter";
 import portraitImage from "@assets/generated_images/portrait_of_a_female_musician_for_album_cover.png";
 
 export default function Home() {
+  const [, setLocation] = useLocation();
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-[#050608] relative overflow-hidden">
       {/* Background Ambient Effects */}
@@ -103,11 +106,12 @@ export default function Home() {
                 <div className="text-[10px] text-white/40 uppercase tracking-wide font-medium">Raised for Music Cares</div>
               </div>
               <Button 
+                onClick={() => setLocation("/vote")}
                 variant="ghost" 
                 size="sm" 
                 className="h-7 text-[10px] font-bold text-primary hover:text-primary hover:bg-primary/10 px-3 uppercase tracking-wider -mr-2"
               >
-                Donate
+                Vote For Charity
               </Button>
             </div>
           </motion.div>
