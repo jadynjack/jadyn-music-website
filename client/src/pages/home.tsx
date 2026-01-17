@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { ExternalLink, Music, Play, Heart, ChevronRight } from "lucide-react";
+import { ExternalLink, Music, Play, Heart, ChevronRight, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import portraitImage from "@assets/generated_images/portrait_of_a_female_musician_for_album_cover.png";
 
 export default function Home() {
@@ -129,6 +130,32 @@ export default function Home() {
               label="Watch Music Video"
             />
           </div>
+
+          {/* Email Sign Up */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            className="bg-[#1a1d26] rounded-2xl p-5 border border-white/5 space-y-4"
+          >
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Join the Inner Circle</h3>
+              <p className="text-[10px] text-white/40 leading-relaxed font-medium">Get exclusive updates on tour dates and new music.</p>
+            </div>
+            
+            <div className="flex gap-2">
+              <Input 
+                placeholder="email@example.com" 
+                className="bg-black/20 border-white/5 h-10 text-xs text-white placeholder:text-white/20 rounded-xl focus:ring-primary focus:border-primary"
+              />
+              <Button 
+                size="icon" 
+                className="h-10 w-10 shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-[0_0_15px_rgba(45,212,191,0.3)] transition-all active:scale-95"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          </motion.div>
 
         </div>
       </motion.div>
