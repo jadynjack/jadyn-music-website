@@ -50,7 +50,7 @@ export default function Home() {
                 
                 <div className="space-y-4 text-white/80 text-sm leading-relaxed">
                   <p>
-                    The math is simple: for every 100 times you stream my music, I’m putting $5 toward a cause that matters. I don’t choose the charity, you do. Cast your vote below, and we’ll turn those streams into something real.
+                    The math is simple: for every 100 times you listen to my music, I’m putting $5 toward a cause that matters. I don’t choose the charity, you do. Cast your vote below, and we’ll turn those listens into something real.
                   </p>
                   <blockquote className="border-l-2 border-primary/30 pl-4 py-1 text-xs text-white/60 italic leading-loose">
                     “Each time a man stands up for an ideal... he sends forth a tiny ripple of hope.” <br/>
@@ -137,7 +137,7 @@ export default function Home() {
             <div className="flex justify-between items-center mb-3">
               <div className="flex items-center gap-2 text-white/90">
                 <Heart className="w-4 h-4 fill-primary text-primary" />
-                <span className="font-bold tracking-wider uppercase text-[13px]">100 Streams = $5 to charity</span>
+                <span className="font-bold tracking-wider uppercase text-[13px]">100 Listens = $5 to charity</span>
               </div>
               <button 
                 onClick={() => setShowInfo(true)}
@@ -191,17 +191,17 @@ export default function Home() {
             <LinkItem 
               delay={0.6}
               icon={<SpotifyIcon className="w-5 h-5 text-[#1DB954]" />}
-              label="Stream on Spotify"
+              label="Listen on Spotify"
             />
             <LinkItem 
               delay={0.7}
               icon={<img src={appleMusicLogo} alt="Apple Music" className="w-6 h-6 object-contain rounded-[4px]" />}
-              label="Apple Music"
+              label="Listen on Apple Music"
             />
             <LinkItem 
               delay={0.8}
               icon={<YoutubeIcon className="w-5 h-5 text-[#FF0000]" />}
-              label="Watch Music Video"
+              label="Listen on YouTube Music"
             />
           </div>
 
