@@ -4,7 +4,7 @@ import { ExternalLink, Music, Play, Heart, ChevronRight, Send, CheckCircle2 } fr
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
-import portraitImage from "@assets/generated_images/portrait_of_a_female_musician_for_album_cover.png";
+import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jpg";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const CHARITIES = [
