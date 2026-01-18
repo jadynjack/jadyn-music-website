@@ -1,11 +1,13 @@
 import * as React from "react";
 import { motion } from "framer-motion";
-import { Music, Save, ArrowLeft, DollarSign } from "lucide-react";
+import { Save, ArrowLeft, DollarSign, Music, Link, Users, Plus, Trash2, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import logoImage from "@assets/logo-white_1768735494982.png";
 
 interface StreamStatsData {
@@ -18,16 +20,56 @@ interface StreamStatsData {
   updatedAt: string;
 }
 
+interface SiteSettingsData {
+  id: string;
+  songTitle: string;
+  songSubtitle: string;
+  spotifyLink: string;
+  appleMusicLink: string;
+  youtubeMusicLink: string;
+}
+
+interface CharityData {
+  id: string;
+  name: string;
+  voteCount: number;
+  percentage: number;
+}
+
 export default function Admin() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { user, isLoading: authLoading, isAuthenticated, logout } = useAuth();
+  
   const [spotify, setSpotify] = React.useState("");
   const [appleMusic, setAppleMusic] = React.useState("");
   const [youtubeMusic, setYoutubeMusic] = React.useState("");
-  const [saved, setSaved] = React.useState(false);
+  const [streamsSaved, setStreamsSaved] = React.useState(false);
+  
+  const [songTitle, setSongTitle] = React.useState("");
+  const [songSubtitle, setSongSubtitle] = React.useState("");
+  const [spotifyLink, setSpotifyLink] = React.useState("");
+  const [appleMusicLink, setAppleMusicLink] = React.useState("");
+  const [youtubeMusicLink, setYoutubeMusicLink] = React.useState("");
+  const [settingsSaved, setSettingsSaved] = React.useState(false);
+  
+  const [editCharities, setEditCharities] = React.useState<{id: string; name: string}[]>([]);
+  const [charitiesSaved, setCharitiesSaved] = React.useState(false);
 
-  const { data: stats, isLoading } = useQuery<StreamStatsData>({
+  const { data: stats } = useQuery<StreamStatsData>({
     queryKey: ["/api/stream-stats"],
+    enabled: isAuthenticated,
+  });
+
+  const { data: settings } = useQuery<SiteSettingsData>({
+    queryKey: ["/api/site-settings"],
+    enabled: isAuthenticated,
+  });
+
+  const { data: charities } = useQuery<CharityData[]>({
+    queryKey: ["/api/charities"],
+    enabled: isAuthenticated,
   });
 
   React.useEffect(() => {
@@ -38,146 +80,424 @@ export default function Admin() {
     }
   }, [stats]);
 
-  const updateMutation = useMutation({
+  React.useEffect(() => {
+    if (settings) {
+      setSongTitle(settings.songTitle || "");
+      setSongSubtitle(settings.songSubtitle || "");
+      setSpotifyLink(settings.spotifyLink || "");
+      setAppleMusicLink(settings.appleMusicLink || "");
+      setYoutubeMusicLink(settings.youtubeMusicLink || "");
+    }
+  }, [settings]);
+
+  React.useEffect(() => {
+    if (charities) {
+      setEditCharities(charities.map(c => ({ id: c.id, name: c.name })));
+    }
+  }, [charities]);
+
+  const updateStreamsMutation = useMutation({
     mutationFn: async (data: { spotifyStreams: number; appleMusicStreams: number; youtubeMusicStreams: number }) => {
       const res = await apiRequest("POST", "/api/stream-stats", data);
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/stream-stats"] });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      setStreamsSaved(true);
+      setTimeout(() => setStreamsSaved(false), 2000);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Please log in to save changes", variant: "destructive" });
     },
   });
 
-  const handleSave = () => {
-    const spotifyNum = parseInt(spotify) || 0;
-    const appleMusicNum = parseInt(appleMusic) || 0;
-    const youtubeMusicNum = parseInt(youtubeMusic) || 0;
-    
-    updateMutation.mutate({
-      spotifyStreams: spotifyNum,
-      appleMusicStreams: appleMusicNum,
-      youtubeMusicStreams: youtubeMusicNum,
+  const updateSettingsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("POST", "/api/site-settings", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/site-settings"] });
+      setSettingsSaved(true);
+      setTimeout(() => setSettingsSaved(false), 2000);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Please log in to save changes", variant: "destructive" });
+    },
+  });
+
+  const updateCharitiesMutation = useMutation({
+    mutationFn: async (data: { charities: { id: string; name: string }[] }) => {
+      const res = await apiRequest("POST", "/api/charities/update", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/charities"] });
+      setCharitiesSaved(true);
+      setTimeout(() => setCharitiesSaved(false), 2000);
+      toast({ title: "Charities Updated", description: "All votes have been reset" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Please log in to save changes", variant: "destructive" });
+    },
+  });
+
+  const handleSaveStreams = () => {
+    updateStreamsMutation.mutate({
+      spotifyStreams: parseInt(spotify) || 0,
+      appleMusicStreams: parseInt(appleMusic) || 0,
+      youtubeMusicStreams: parseInt(youtubeMusic) || 0,
     });
+  };
+
+  const handleSaveSettings = () => {
+    updateSettingsMutation.mutate({
+      songTitle: songTitle || "RAINBOW",
+      songSubtitle,
+      spotifyLink,
+      appleMusicLink,
+      youtubeMusicLink,
+    });
+  };
+
+  const handleSaveCharities = () => {
+    const validCharities = editCharities.filter(c => c.id && c.name);
+    if (validCharities.length === 0) {
+      toast({ title: "Error", description: "Add at least one charity", variant: "destructive" });
+      return;
+    }
+    updateCharitiesMutation.mutate({ charities: validCharities });
+  };
+
+  const addCharity = () => {
+    setEditCharities([...editCharities, { id: "", name: "" }]);
+  };
+
+  const removeCharity = (index: number) => {
+    setEditCharities(editCharities.filter((_, i) => i !== index));
+  };
+
+  const updateCharity = (index: number, field: "id" | "name", value: string) => {
+    const updated = [...editCharities];
+    updated[index] = { ...updated[index], [field]: field === "id" ? value.toLowerCase().replace(/\s+/g, "-") : value };
+    setEditCharities(updated);
   };
 
   const totalStreams = (parseInt(spotify) || 0) + (parseInt(appleMusic) || 0) + (parseInt(youtubeMusic) || 0);
   const dollarsRaised = Math.floor(totalStreams / 100) * 5;
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#050608]">
+        <div className="text-white/60">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-[#050608]">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-[380px] bg-[#12141c] rounded-[32px] border border-white/5 shadow-2xl p-8 text-center"
+        >
+          <img src={logoImage} alt="Logo" className="h-12 w-auto mx-auto mb-6" />
+          <h1 className="font-display text-2xl font-black italic uppercase tracking-tighter text-white mb-2">Admin Access</h1>
+          <p className="text-white/40 text-sm mb-8">Sign in to manage your site</p>
+          <a href="/api/login">
+            <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest rounded-xl" data-testid="button-login">
+              Sign In
+            </Button>
+          </a>
+          <Button 
+            onClick={() => setLocation("/")}
+            variant="ghost" 
+            className="mt-4 text-white/40 hover:text-white"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Site
+          </Button>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-0 sm:p-4 bg-[#050608] relative overflow-hidden">
+    <div className="min-h-screen bg-[#050608] relative overflow-hidden">
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none" />
       
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-full sm:max-w-[420px] bg-[#12141c] rounded-none sm:rounded-[32px] border-0 sm:border border-white/5 shadow-2xl overflow-hidden relative mx-auto"
-      >
-        <div className="p-6 border-b border-white/5">
-          <div className="flex items-center justify-between mb-4">
-            <Button 
-              onClick={() => setLocation("/")}
-              variant="ghost" 
-              size="sm"
-              className="text-white/40 hover:text-white -ml-2"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+      <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <Button 
+            onClick={() => setLocation("/")}
+            variant="ghost" 
+            size="sm"
+            className="text-white/40 hover:text-white"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+          <img src={logoImage} alt="Logo" className="h-8 w-auto" />
+          <a href="/api/logout">
+            <Button variant="ghost" size="sm" className="text-white/40 hover:text-white">
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
             </Button>
-            <img src={logoImage} alt="Logo" className="h-8 w-auto" />
-          </div>
-          <h1 className="font-display text-2xl font-black italic uppercase tracking-tighter text-white">Admin Panel</h1>
-          <p className="text-white/40 text-xs mt-1">Update your streaming numbers</p>
+          </a>
         </div>
 
-        <div className="p-6 space-y-6">
-          <div className="bg-primary/10 border border-primary/20 rounded-2xl p-5 flex items-center justify-between">
-            <div>
-              <div className="text-3xl font-bold text-primary">${dollarsRaised.toLocaleString()}</div>
-              <div className="text-[10px] text-primary/60 uppercase tracking-widest font-bold mt-1">Raised for Charity</div>
+        <div className="text-center">
+          <h1 className="font-display text-3xl font-black italic uppercase tracking-tighter text-white">Admin Dashboard</h1>
+          <p className="text-white/40 text-sm mt-1">Welcome, {user?.firstName || user?.email || "Admin"}</p>
+        </div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[#12141c] rounded-2xl border border-white/5 p-6"
+        >
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-primary" />
             </div>
-            <DollarSign className="w-10 h-10 text-primary/30" />
+            <div>
+              <h2 className="text-white font-bold">Stream Counts</h2>
+              <p className="text-white/40 text-xs">Enter your current streaming numbers</p>
+            </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-5 flex items-center justify-between">
+            <div>
+              <div className="text-2xl font-bold text-primary">${dollarsRaised.toLocaleString()}</div>
+              <div className="text-[10px] text-primary/60 uppercase tracking-widest font-bold">Total Raised</div>
+            </div>
+            <div className="text-right">
+              <div className="text-lg font-bold text-white">{totalStreams.toLocaleString()}</div>
+              <div className="text-[10px] text-white/40 uppercase tracking-widest">Total Listens</div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 mb-5">
             <div className="space-y-2">
               <label className="text-xs font-bold text-white/60 uppercase tracking-wider flex items-center gap-2">
                 <SpotifyIcon className="w-4 h-4 text-[#1DB954]" />
-                Spotify Listens
+                Spotify
               </label>
               <Input 
                 type="number"
                 value={spotify}
                 onChange={(e) => setSpotify(e.target.value)}
                 placeholder="0"
-                className="bg-black/20 border-white/10 h-12 text-lg text-white placeholder:text-white/20 rounded-xl"
+                className="bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl"
                 data-testid="input-spotify"
               />
             </div>
-
             <div className="space-y-2">
               <label className="text-xs font-bold text-white/60 uppercase tracking-wider flex items-center gap-2">
                 <AppleMusicIcon className="w-4 h-4 text-[#FA243C]" />
-                Apple Music Listens
+                Apple Music
               </label>
               <Input 
                 type="number"
                 value={appleMusic}
                 onChange={(e) => setAppleMusic(e.target.value)}
                 placeholder="0"
-                className="bg-black/20 border-white/10 h-12 text-lg text-white placeholder:text-white/20 rounded-xl"
+                className="bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl"
                 data-testid="input-apple-music"
               />
             </div>
-
             <div className="space-y-2">
               <label className="text-xs font-bold text-white/60 uppercase tracking-wider flex items-center gap-2">
                 <YoutubeIcon className="w-4 h-4 text-[#FF0000]" />
-                YouTube Music Listens
+                YouTube Music
               </label>
               <Input 
                 type="number"
                 value={youtubeMusic}
                 onChange={(e) => setYoutubeMusic(e.target.value)}
                 placeholder="0"
-                className="bg-black/20 border-white/10 h-12 text-lg text-white placeholder:text-white/20 rounded-xl"
+                className="bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl"
                 data-testid="input-youtube-music"
               />
             </div>
           </div>
 
-          <div className="pt-2 space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-white/40">Total Listens</span>
-              <span className="text-white font-bold">{totalStreams.toLocaleString()}</span>
+          <Button 
+            onClick={handleSaveStreams}
+            disabled={updateStreamsMutation.isPending}
+            className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest rounded-xl"
+            data-testid="button-save-streams"
+          >
+            {streamsSaved ? "Saved!" : updateStreamsMutation.isPending ? "Saving..." : <><Save className="w-4 h-4 mr-2" />Save Streams</>}
+          </Button>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-[#12141c] rounded-2xl border border-white/5 p-6"
+        >
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
+              <Music className="w-5 h-5 text-blue-400" />
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-white/40">Formula</span>
-              <span className="text-white/60">100 listens = $5</span>
+            <div>
+              <h2 className="text-white font-bold">Song Settings</h2>
+              <p className="text-white/40 text-xs">Update the featured song info</p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 mb-5">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-white/60 uppercase tracking-wider">Song Title</label>
+              <Input 
+                value={songTitle}
+                onChange={(e) => setSongTitle(e.target.value)}
+                placeholder="RAINBOW"
+                className="bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl"
+                data-testid="input-song-title"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-white/60 uppercase tracking-wider">Subtitle</label>
+              <Input 
+                value={songSubtitle}
+                onChange={(e) => setSongSubtitle(e.target.value)}
+                placeholder="New single out now on all platforms"
+                className="bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl"
+                data-testid="input-song-subtitle"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+              <Link className="w-4 h-4 text-white/40" />
+            </div>
+            <span className="text-sm text-white/60">Streaming Links</span>
+          </div>
+
+          <div className="grid gap-4 mb-5">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-white/60 uppercase tracking-wider flex items-center gap-2">
+                <SpotifyIcon className="w-3 h-3 text-[#1DB954]" />
+                Spotify URL
+              </label>
+              <Input 
+                value={spotifyLink}
+                onChange={(e) => setSpotifyLink(e.target.value)}
+                placeholder="https://open.spotify.com/..."
+                className="bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl text-sm"
+                data-testid="input-spotify-link"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-white/60 uppercase tracking-wider flex items-center gap-2">
+                <AppleMusicIcon className="w-3 h-3 text-[#FA243C]" />
+                Apple Music URL
+              </label>
+              <Input 
+                value={appleMusicLink}
+                onChange={(e) => setAppleMusicLink(e.target.value)}
+                placeholder="https://music.apple.com/..."
+                className="bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl text-sm"
+                data-testid="input-apple-music-link"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-white/60 uppercase tracking-wider flex items-center gap-2">
+                <YoutubeIcon className="w-3 h-3 text-[#FF0000]" />
+                YouTube Music URL
+              </label>
+              <Input 
+                value={youtubeMusicLink}
+                onChange={(e) => setYoutubeMusicLink(e.target.value)}
+                placeholder="https://music.youtube.com/..."
+                className="bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl text-sm"
+                data-testid="input-youtube-music-link"
+              />
             </div>
           </div>
 
           <Button 
-            onClick={handleSave}
-            disabled={updateMutation.isPending}
-            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(45,212,191,0.3)] transition-all"
-            data-testid="button-save"
+            onClick={handleSaveSettings}
+            disabled={updateSettingsMutation.isPending}
+            className="w-full h-11 bg-blue-500 hover:bg-blue-500/90 text-white font-bold uppercase tracking-widest rounded-xl"
+            data-testid="button-save-settings"
           >
-            {saved ? (
-              <>Saved!</>
-            ) : updateMutation.isPending ? (
-              <>Saving...</>
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                Save Changes
-              </>
-            )}
+            {settingsSaved ? "Saved!" : updateSettingsMutation.isPending ? "Saving..." : <><Save className="w-4 h-4 mr-2" />Save Settings</>}
           </Button>
-        </div>
-      </motion.div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-[#12141c] rounded-2xl border border-white/5 p-6"
+        >
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center">
+              <Users className="w-5 h-5 text-pink-400" />
+            </div>
+            <div>
+              <h2 className="text-white font-bold">Charity Voting</h2>
+              <p className="text-white/40 text-xs">Updating charities will reset all votes</p>
+            </div>
+          </div>
+
+          <div className="space-y-3 mb-5">
+            {editCharities.map((charity, index) => (
+              <div key={index} className="flex gap-2">
+                <Input 
+                  value={charity.name}
+                  onChange={(e) => {
+                    updateCharity(index, "name", e.target.value);
+                    if (!charity.id || charity.id === editCharities[index].name.toLowerCase().replace(/\s+/g, "-")) {
+                      updateCharity(index, "id", e.target.value);
+                    }
+                  }}
+                  placeholder="Charity Name"
+                  className="flex-1 bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl"
+                  data-testid={`input-charity-name-${index}`}
+                />
+                <Button 
+                  onClick={() => removeCharity(index)}
+                  variant="ghost" 
+                  size="icon"
+                  className="h-11 w-11 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  disabled={editCharities.length <= 1}
+                  data-testid={`button-remove-charity-${index}`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <Button 
+            onClick={addCharity}
+            variant="outline"
+            className="w-full h-11 mb-4 border-white/10 text-white/60 hover:text-white hover:bg-white/5 rounded-xl"
+            disabled={editCharities.length >= 5}
+            data-testid="button-add-charity"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Charity
+          </Button>
+
+          <Button 
+            onClick={handleSaveCharities}
+            disabled={updateCharitiesMutation.isPending}
+            className="w-full h-11 bg-pink-500 hover:bg-pink-500/90 text-white font-bold uppercase tracking-widest rounded-xl"
+            data-testid="button-save-charities"
+          >
+            {charitiesSaved ? "Saved!" : updateCharitiesMutation.isPending ? "Saving..." : <><Save className="w-4 h-4 mr-2" />Save Charities</>}
+          </Button>
+        </motion.div>
+      </div>
     </div>
   );
 }

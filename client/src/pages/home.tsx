@@ -25,6 +25,14 @@ interface StreamStatsData {
   dollarsRaised: number;
 }
 
+interface SiteSettingsData {
+  songTitle: string;
+  songSubtitle: string;
+  spotifyLink: string;
+  appleMusicLink: string;
+  youtubeMusicLink: string;
+}
+
 export default function Home() {
   const [, setLocation] = useLocation();
   const [showInfo, setShowInfo] = React.useState(false);
@@ -37,6 +45,10 @@ export default function Home() {
 
   const { data: streamStats } = useQuery<StreamStatsData>({
     queryKey: ["/api/stream-stats"],
+  });
+
+  const { data: siteSettings } = useQuery<SiteSettingsData>({
+    queryKey: ["/api/site-settings"],
   });
 
   const subscribeMutation = useMutation({
@@ -162,7 +174,7 @@ export default function Home() {
               transition={{ delay: 0.3 }}
               className="font-display text-5xl font-black italic tracking-tighter text-white mb-2 drop-shadow-xl uppercase"
             >
-              RAINBOW
+              {siteSettings?.songTitle || "RAINBOW"}
             </motion.h2>
             
             <motion.p 
@@ -171,7 +183,7 @@ export default function Home() {
               transition={{ delay: 0.4 }}
               className="text-white/60 text-sm font-medium tracking-wide"
             >
-              New single out now on all platforms
+              {siteSettings?.songSubtitle || "New single out now on all platforms"}
             </motion.p>
           </div>
         </div>
@@ -246,16 +258,19 @@ export default function Home() {
               delay={0.6}
               icon={<SpotifyIcon className="w-5 h-5 text-[#1DB954]" />}
               label="Listen on Spotify"
+              href={siteSettings?.spotifyLink}
             />
             <LinkItem 
               delay={0.7}
               icon={<img src={appleMusicLogo} alt="Apple Music" className="w-6 h-6 object-contain rounded-[4px]" />}
               label="Listen on Apple Music"
+              href={siteSettings?.appleMusicLink}
             />
             <LinkItem 
               delay={0.8}
               icon={<YoutubeIcon className="w-5 h-5 text-[#FF0000]" />}
               label="Listen on YouTube Music"
+              href={siteSettings?.youtubeMusicLink}
             />
           </div>
 
@@ -304,10 +319,12 @@ export default function Home() {
   );
 }
 
-function LinkItem({ icon, label, delay }: { icon: React.ReactNode, label: string, delay: number }) {
+function LinkItem({ icon, label, delay, href }: { icon: React.ReactNode, label: string, delay: number, href?: string }) {
   return (
     <motion.a
-      href="#"
+      href={href || "#"}
+      target={href ? "_blank" : undefined}
+      rel={href ? "noopener noreferrer" : undefined}
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay }}

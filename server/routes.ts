@@ -1,14 +1,35 @@
-import type { Express } from "express";
+import type { Express, RequestHandler } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertVoteSchema, insertSubscriberSchema, updateStreamStatsSchema } from "@shared/schema";
+import { insertVoteSchema, insertSubscriberSchema, updateStreamStatsSchema, updateSiteSettingsSchema, updateCharitiesSchema } from "@shared/schema";
+import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+
+const isAdmin: RequestHandler = (req, res, next) => {
+  const user = req.user as any;
+  if (!user?.claims?.sub) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const userEmail = user.claims.email;
+  
+  if (adminEmail && userEmail !== adminEmail) {
+    return res.status(403).json({ message: "Forbidden: Admin access required" });
+  }
+  
+  next();
+};
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  await setupAuth(app);
+  registerAuthRoutes(app);
+  
   await storage.initializeCharities();
   await storage.initializeStreamStats();
+  await storage.initializeSiteSettings();
 
   app.get("/api/charities", async (req, res) => {
     try {
@@ -95,7 +116,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/stream-stats", async (req, res) => {
+  app.post("/api/stream-stats", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const result = updateStreamStatsSchema.safeParse(req.body);
       if (!result.success) {
@@ -108,6 +129,43 @@ export async function registerRoutes(
       res.json({ success: true, stats: { ...stats, totalStreams, dollarsRaised } });
     } catch (error) {
       res.status(500).json({ error: "Failed to update stream stats" });
+    }
+  });
+
+  app.get("/api/site-settings", async (req, res) => {
+    try {
+      const settings = await storage.getSiteSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch site settings" });
+    }
+  });
+
+  app.post("/api/site-settings", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const result = updateSiteSettingsSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid site settings data" });
+      }
+
+      const settings = await storage.updateSiteSettings(result.data);
+      res.json({ success: true, settings });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update site settings" });
+    }
+  });
+
+  app.post("/api/charities/update", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const result = updateCharitiesSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid charities data" });
+      }
+
+      const charities = await storage.updateCharities(result.data.charities);
+      res.json({ success: true, charities });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update charities" });
     }
   });
 

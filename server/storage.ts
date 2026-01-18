@@ -1,7 +1,7 @@
 import { 
-  charities, votes, subscribers, streamStats,
-  type Charity, type Vote, type Subscriber, type StreamStats,
-  type InsertVote, type InsertSubscriber, type UpdateStreamStats
+  charities, votes, subscribers, streamStats, siteSettings,
+  type Charity, type Vote, type Subscriber, type StreamStats, type SiteSettings,
+  type InsertVote, type InsertSubscriber, type UpdateStreamStats, type UpdateSiteSettings
 } from "@shared/schema";
 import { db } from "./db";
 import { pool } from "./db";
@@ -19,6 +19,11 @@ export interface IStorage {
   getStreamStats(): Promise<StreamStats>;
   updateStreamStats(stats: UpdateStreamStats): Promise<StreamStats>;
   initializeStreamStats(): Promise<void>;
+  getSiteSettings(): Promise<SiteSettings>;
+  updateSiteSettings(settings: UpdateSiteSettings): Promise<SiteSettings>;
+  initializeSiteSettings(): Promise<void>;
+  updateCharities(newCharities: { id: string; name: string }[]): Promise<Charity[]>;
+  resetVotes(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -93,23 +98,84 @@ export class DatabaseStorage implements IStorage {
 
   async updateStreamStats(stats: UpdateStreamStats): Promise<StreamStats> {
     const [updated] = await db
-      .update(streamStats)
-      .set({ ...stats, updatedAt: new Date() })
-      .where(eq(streamStats.id, "main"))
+      .insert(streamStats)
+      .values({ id: "main", ...stats, updatedAt: new Date() })
+      .onConflictDoUpdate({
+        target: streamStats.id,
+        set: { ...stats, updatedAt: new Date() }
+      })
       .returning();
     return updated;
   }
 
   async initializeStreamStats(): Promise<void> {
-    const existing = await db.select().from(streamStats).where(eq(streamStats.id, "main"));
-    if (existing.length === 0) {
-      await db.insert(streamStats).values({
-        id: "main",
-        spotifyStreams: 0,
-        appleMusicStreams: 0,
-        youtubeMusicStreams: 0,
-      });
+    await db.insert(streamStats).values({
+      id: "main",
+      spotifyStreams: 0,
+      appleMusicStreams: 0,
+      youtubeMusicStreams: 0,
+    }).onConflictDoNothing();
+  }
+
+  async getSiteSettings(): Promise<SiteSettings> {
+    const [settings] = await db.select().from(siteSettings).where(eq(siteSettings.id, "main"));
+    return settings || {
+      id: "main",
+      songTitle: "RAINBOW",
+      songSubtitle: "New single out now on all platforms",
+      spotifyLink: "",
+      appleMusicLink: "",
+      youtubeMusicLink: "",
+      updatedAt: new Date()
+    };
+  }
+
+  async updateSiteSettings(settings: UpdateSiteSettings): Promise<SiteSettings> {
+    const [updated] = await db
+      .insert(siteSettings)
+      .values({ id: "main", ...settings, updatedAt: new Date() })
+      .onConflictDoUpdate({
+        target: siteSettings.id,
+        set: { ...settings, updatedAt: new Date() }
+      })
+      .returning();
+    return updated;
+  }
+
+  async initializeSiteSettings(): Promise<void> {
+    await db.insert(siteSettings).values({
+      id: "main",
+      songTitle: "RAINBOW",
+      songSubtitle: "New single out now on all platforms",
+      spotifyLink: "",
+      appleMusicLink: "",
+      youtubeMusicLink: "",
+    }).onConflictDoNothing();
+  }
+
+  async updateCharities(newCharities: { id: string; name: string }[]): Promise<Charity[]> {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const txDb = drizzle(client);
+      await txDb.delete(votes);
+      await txDb.delete(charities);
+      const inserted = await txDb.insert(charities).values(
+        newCharities.map(c => ({ id: c.id, name: c.name, voteCount: 0 }))
+      ).returning();
+      await client.query('COMMIT');
+      return inserted;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
+  }
+
+  async resetVotes(): Promise<void> {
+    await db.delete(votes);
+    await db.update(charities).set({ voteCount: 0 });
   }
 }
 
