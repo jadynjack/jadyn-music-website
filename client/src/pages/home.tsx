@@ -52,7 +52,7 @@ export default function Home() {
                   <p>
                     The math is simple: for every 100 times you stream my music, I’m putting $5 toward a cause that matters. I don’t choose the charity, you do. Cast your vote below, and we’ll turn those streams into something real.
                   </p>
-                  <p className="text-white/40 italic">
+                  <p>
                     I know 100 streams isn't going to fix everything. But it’s a start.
                   </p>
                   <blockquote className="border-l-2 border-primary/30 pl-4 py-1 text-xs text-white/60 italic leading-loose">
