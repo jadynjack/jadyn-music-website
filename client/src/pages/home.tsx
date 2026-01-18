@@ -15,7 +15,6 @@ export default function Home() {
       {/* Background Ambient Effects */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none" />
-
       {/* Main Card Container */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -90,7 +89,7 @@ export default function Home() {
             <div className="flex justify-between items-center mb-3">
               <div className="flex items-center gap-2 text-white/90">
                 <Heart className="w-4 h-4 fill-primary text-primary" />
-                <span className="text-[10px] font-bold tracking-wider uppercase">100 Streams = $5 to charity</span>
+                <span className="font-bold tracking-wider uppercase text-[13px]">100 Streams = $5 to charity</span>
               </div>
               <span className="text-[10px] font-bold text-white/60">75%</span>
             </div>
