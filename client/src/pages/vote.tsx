@@ -49,7 +49,7 @@ export default function Vote() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-[#050608] relative overflow-hidden">
       {/* Background Ambient Effects */}
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Main Card Container */}

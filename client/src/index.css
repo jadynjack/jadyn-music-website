@@ -13,10 +13,10 @@
   --color-popover: hsl(225 20% 10%);
   --color-popover-foreground: hsl(0 0% 100%);
   
-  --color-primary: hsl(170 80% 45%);
+  --color-primary: hsl(45 90% 60%);
   --color-primary-foreground: hsl(225 30% 10%);
   
-  --color-secondary: hsl(225 20% 15%);
+  --color-secondary: hsl(45 90% 15%);
   --color-secondary-foreground: hsl(0 0% 100%);
   
   --color-muted: hsl(225 20% 15%);
@@ -30,7 +30,7 @@
   
   --color-border: hsl(225 20% 15%);
   --color-input: hsl(225 20% 15%);
-  --color-ring: hsl(170 80% 45%);
+  --color-ring: hsl(45 90% 60%);
   
   --radius: 1rem;
   
