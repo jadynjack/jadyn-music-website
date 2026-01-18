@@ -1,5 +1,6 @@
-import { motion } from "framer-motion";
-import { ExternalLink, Music, Play, Heart, ChevronRight, Send } from "lucide-react";
+import * as React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ExternalLink, Music, Play, Heart, ChevronRight, Send, Info, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
@@ -9,12 +10,14 @@ import logoImage from "@assets/logo-white_1768735494982.png";
 
 export default function Home() {
   const [, setLocation] = useLocation();
+  const [showInfo, setShowInfo] = React.useState(false);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-[#050608] relative overflow-hidden">
       {/* Background Ambient Effects */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none" />
+      
       {/* Main Card Container */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -22,6 +25,54 @@ export default function Home() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="w-full max-w-[380px] bg-[#12141c] rounded-[32px] border border-white/5 shadow-2xl overflow-hidden relative mx-auto"
       >
+        {/* Info Box Overlay */}
+        <AnimatePresence>
+          {showInfo && (
+            <motion.div 
+              initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+              animate={{ opacity: 1, backdropFilter: "blur(24px)" }}
+              exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+              className="absolute inset-0 z-50 bg-[#12141c]/95 p-8 flex flex-col justify-center"
+            >
+              <button 
+                onClick={() => setShowInfo(false)}
+                className="absolute top-6 right-6 p-2 text-white/40 hover:text-white transition-colors"
+                data-testid="button-close-info"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <h3 className="font-display text-2xl font-black italic uppercase tracking-tighter text-primary">The Glimmer Fund</h3>
+                  <div className="h-px w-12 bg-primary/50" />
+                </div>
+                
+                <div className="space-y-4 text-white/80 text-sm leading-relaxed">
+                  <p>
+                    The math is simple: for every 100 times you stream my music, I’m putting $5 toward a cause that matters. I don’t choose the charity, you do. Cast your vote below, and we’ll turn those streams into something real.
+                  </p>
+                  <p className="text-white/40 italic">
+                    I know 100 streams isn't going to fix everything. But it’s a start.
+                  </p>
+                  <blockquote className="border-l-2 border-primary/30 pl-4 py-1 text-xs text-white/60 italic leading-loose">
+                    “Each time a man stands up for an ideal... he sends forth a tiny ripple of hope.” <br/>
+                    <span className="text-primary/60 not-italic font-bold">— Robert F. Kennedy</span>
+                  </blockquote>
+                </div>
+
+                <Button 
+                  onClick={() => setShowInfo(false)}
+                  className="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-bold uppercase tracking-widest text-xs h-12 rounded-xl mt-4"
+                  data-testid="button-dismiss-info"
+                >
+                  Got it
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Profile / Hero Section */}
         <div className="relative h-[480px] w-full">
           {/* Image */}
@@ -91,7 +142,13 @@ export default function Home() {
                 <Heart className="w-4 h-4 fill-primary text-primary" />
                 <span className="font-bold tracking-wider uppercase text-[13px]">100 Streams = $5 to charity</span>
               </div>
-              <span className="text-[10px] font-bold text-white/60">75%</span>
+              <button 
+                onClick={() => setShowInfo(true)}
+                className="p-1 text-white/40 hover:text-primary transition-colors active:scale-90"
+                data-testid="button-info-campaign"
+              >
+                <Info className="w-4 h-4" />
+              </button>
             </div>
             
             <div className="relative h-2 w-full bg-black/40 rounded-full overflow-hidden mb-3 border border-white/5">
