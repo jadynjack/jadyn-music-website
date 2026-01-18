@@ -1,13 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertVoteSchema, insertSubscriberSchema } from "@shared/schema";
+import { insertVoteSchema, insertSubscriberSchema, updateStreamStatsSchema } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   await storage.initializeCharities();
+  await storage.initializeStreamStats();
 
   app.get("/api/charities", async (req, res) => {
     try {
@@ -80,6 +81,33 @@ export async function registerRoutes(
       res.json({ success: true, subscriber });
     } catch (error) {
       res.status(500).json({ error: "Failed to subscribe" });
+    }
+  });
+
+  app.get("/api/stream-stats", async (req, res) => {
+    try {
+      const stats = await storage.getStreamStats();
+      const totalStreams = stats.spotifyStreams + stats.appleMusicStreams + stats.youtubeMusicStreams;
+      const dollarsRaised = Math.floor(totalStreams / 100) * 5;
+      res.json({ ...stats, totalStreams, dollarsRaised });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch stream stats" });
+    }
+  });
+
+  app.post("/api/stream-stats", async (req, res) => {
+    try {
+      const result = updateStreamStatsSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid stream stats data" });
+      }
+
+      const stats = await storage.updateStreamStats(result.data);
+      const totalStreams = stats.spotifyStreams + stats.appleMusicStreams + stats.youtubeMusicStreams;
+      const dollarsRaised = Math.floor(totalStreams / 100) * 5;
+      res.json({ success: true, stats: { ...stats, totalStreams, dollarsRaised } });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update stream stats" });
     }
   });
 

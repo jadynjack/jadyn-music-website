@@ -1,7 +1,7 @@
 import { 
-  charities, votes, subscribers,
-  type Charity, type Vote, type Subscriber,
-  type InsertVote, type InsertSubscriber 
+  charities, votes, subscribers, streamStats,
+  type Charity, type Vote, type Subscriber, type StreamStats,
+  type InsertVote, type InsertSubscriber, type UpdateStreamStats
 } from "@shared/schema";
 import { db } from "./db";
 import { pool } from "./db";
@@ -16,6 +16,9 @@ export interface IStorage {
   getVoteCounts(): Promise<{ charityId: string; count: number }[]>;
   createSubscriber(subscriber: InsertSubscriber): Promise<Subscriber | null>;
   initializeCharities(): Promise<void>;
+  getStreamStats(): Promise<StreamStats>;
+  updateStreamStats(stats: UpdateStreamStats): Promise<StreamStats>;
+  initializeStreamStats(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -80,6 +83,32 @@ export class DatabaseStorage implements IStorage {
         { id: "save-the-music", name: "Save The Music", voteCount: 30 },
         { id: "girls-rock", name: "Girls Rock Camp", voteCount: 25 },
       ]);
+    }
+  }
+
+  async getStreamStats(): Promise<StreamStats> {
+    const [stats] = await db.select().from(streamStats).where(eq(streamStats.id, "main"));
+    return stats || { id: "main", spotifyStreams: 0, appleMusicStreams: 0, youtubeMusicStreams: 0, updatedAt: new Date() };
+  }
+
+  async updateStreamStats(stats: UpdateStreamStats): Promise<StreamStats> {
+    const [updated] = await db
+      .update(streamStats)
+      .set({ ...stats, updatedAt: new Date() })
+      .where(eq(streamStats.id, "main"))
+      .returning();
+    return updated;
+  }
+
+  async initializeStreamStats(): Promise<void> {
+    const existing = await db.select().from(streamStats).where(eq(streamStats.id, "main"));
+    if (existing.length === 0) {
+      await db.insert(streamStats).values({
+        id: "main",
+        spotifyStreams: 0,
+        appleMusicStreams: 0,
+        youtubeMusicStreams: 0,
+      });
     }
   }
 }

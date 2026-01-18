@@ -17,6 +17,14 @@ interface CharityData {
   percentage: number;
 }
 
+interface StreamStatsData {
+  spotifyStreams: number;
+  appleMusicStreams: number;
+  youtubeMusicStreams: number;
+  totalStreams: number;
+  dollarsRaised: number;
+}
+
 export default function Home() {
   const [, setLocation] = useLocation();
   const [showInfo, setShowInfo] = React.useState(false);
@@ -25,6 +33,10 @@ export default function Home() {
 
   const { data: charities } = useQuery<CharityData[]>({
     queryKey: ["/api/charities"],
+  });
+
+  const { data: streamStats } = useQuery<StreamStatsData>({
+    queryKey: ["/api/stream-stats"],
   });
 
   const subscribeMutation = useMutation({
@@ -42,8 +54,9 @@ export default function Home() {
     (prev.percentage > current.percentage) ? prev : current
   , charities[0]);
 
-  const totalVotes = charities?.reduce((sum, c) => sum + c.voteCount, 0) || 0;
-  const raised = Math.floor(totalVotes * 0.05) * 100;
+  const raised = streamStats?.dollarsRaised || 0;
+  const totalStreams = streamStats?.totalStreams || 0;
+  const progressPercent = Math.min((totalStreams / 100000) * 100, 100);
 
   const handleSubscribe = () => {
     if (email && email.includes("@")) {
@@ -190,7 +203,7 @@ export default function Home() {
             <div className="relative h-3 w-full bg-black/40 rounded-full mb-3 border border-white/5 shadow-inner">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: `${leadingCharity?.percentage || 0}%` }}
+                animate={{ width: `${progressPercent}%` }}
                 transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
                 className="absolute top-0 left-0 h-full bg-primary rounded-full"
                 style={{

@@ -22,6 +22,20 @@ export const subscribers = pgTable("subscribers", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const streamStats = pgTable("stream_stats", {
+  id: varchar("id", { length: 50 }).primaryKey().default("main"),
+  spotifyStreams: integer("spotify_streams").notNull().default(0),
+  appleMusicStreams: integer("apple_music_streams").notNull().default(0),
+  youtubeMusicStreams: integer("youtube_music_streams").notNull().default(0),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const updateStreamStatsSchema = z.object({
+  spotifyStreams: z.number().int().min(0),
+  appleMusicStreams: z.number().int().min(0),
+  youtubeMusicStreams: z.number().int().min(0),
+});
+
 export const insertVoteSchema = createInsertSchema(votes).pick({
   charityId: true,
   email: true,
@@ -36,3 +50,5 @@ export type Vote = typeof votes.$inferSelect;
 export type InsertSubscriber = z.infer<typeof insertSubscriberSchema>;
 export type Subscriber = typeof subscribers.$inferSelect;
 export type Charity = typeof charities.$inferSelect;
+export type StreamStats = typeof streamStats.$inferSelect;
+export type UpdateStreamStats = z.infer<typeof updateStreamStatsSchema>;
