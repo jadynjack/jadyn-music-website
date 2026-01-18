@@ -52,9 +52,6 @@ export default function Home() {
                   <p>
                     The math is simple: for every 100 times you stream my music, I’m putting $5 toward a cause that matters. I don’t choose the charity, you do. Cast your vote below, and we’ll turn those streams into something real.
                   </p>
-                  <p>
-                    I know 100 streams isn't going to fix everything. But it’s a start.
-                  </p>
                   <blockquote className="border-l-2 border-primary/30 pl-4 py-1 text-xs text-white/60 italic leading-loose">
                     “Each time a man stands up for an ideal... he sends forth a tiny ripple of hope.” <br/>
                     <span className="text-primary/60 not-italic font-bold">— Robert F. Kennedy</span>
