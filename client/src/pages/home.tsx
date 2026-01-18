@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
 import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jpg";
-
+import appleMusicLogo from "@assets/Apple_Music_icon.svg_1768739002544.png";
 import logoImage from "@assets/logo-white_1768735494982.png";
 
 export default function Home() {
@@ -195,7 +195,7 @@ export default function Home() {
             />
             <LinkItem 
               delay={0.7}
-              icon={<AppleMusicIcon className="w-5 h-5 text-[#FA243C]" />}
+              icon={<img src={appleMusicLogo} alt="Apple Music" className="w-6 h-6 object-contain rounded-[4px]" />}
               label="Apple Music"
             />
             <LinkItem 
