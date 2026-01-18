@@ -71,7 +71,7 @@ export default function Home() {
               transition={{ delay: 0.4 }}
               className="text-white/60 text-sm font-medium tracking-wide"
             >
-              Out now on all platforms
+              New single out now on all platforms
             </motion.p>
           </div>
         </div>
