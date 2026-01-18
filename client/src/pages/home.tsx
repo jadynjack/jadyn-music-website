@@ -148,12 +148,25 @@ export default function Home() {
               </button>
             </div>
             
-            <div className="relative h-2 w-full bg-black/40 rounded-full overflow-hidden mb-3 border border-white/5">
+            <div className="relative h-3 w-full bg-black/40 rounded-full mb-3 border border-white/5 shadow-inner">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: "75%" }}
                 transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
-                className="absolute top-0 left-0 h-full bg-primary rounded-full shadow-[0_0_15px_rgba(45,212,191,0.6)]"
+                className="absolute top-0 left-0 h-full bg-primary rounded-full"
+                style={{
+                  backgroundImage: `
+                    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, transparent 40%),
+                    radial-gradient(circle at 70% 60%, rgba(255,255,255,0.3) 0%, transparent 30%),
+                    linear-gradient(to bottom, rgba(255,255,255,0.2), transparent 40%, rgba(0,0,0,0.2) 80%)
+                  `,
+                  boxShadow: `
+                    0 0 20px rgba(45,212,191,0.4),
+                    inset 0 2px 4px rgba(255,255,255,0.5),
+                    inset 0 -2px 4px rgba(0,0,0,0.3)
+                  `,
+                  filter: 'contrast(1.2) brightness(1.1)'
+                }}
               />
             </div>
             
