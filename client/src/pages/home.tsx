@@ -1,19 +1,58 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, Music, Play, Heart, ChevronRight, Send, Info, X } from "lucide-react";
+import { ExternalLink, Music, Play, Heart, ChevronRight, Send, Info, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jpg";
 import appleMusicLogo from "@assets/Apple_Music_icon.svg_1768739002544.png";
 import logoImage from "@assets/logo-white_1768735494982.png";
 
+interface CharityData {
+  id: string;
+  name: string;
+  voteCount: number;
+  percentage: number;
+}
+
 export default function Home() {
   const [, setLocation] = useLocation();
   const [showInfo, setShowInfo] = React.useState(false);
+  const [email, setEmail] = React.useState("");
+  const [subscribed, setSubscribed] = React.useState(false);
+
+  const { data: charities } = useQuery<CharityData[]>({
+    queryKey: ["/api/charities"],
+  });
+
+  const subscribeMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const res = await apiRequest("POST", "/api/subscribers", { email });
+      return res.json();
+    },
+    onSuccess: () => {
+      setSubscribed(true);
+      setEmail("");
+    },
+  });
+
+  const leadingCharity = charities?.reduce((prev, current) => 
+    (prev.percentage > current.percentage) ? prev : current
+  , charities[0]);
+
+  const totalVotes = charities?.reduce((sum, c) => sum + c.voteCount, 0) || 0;
+  const raised = Math.floor(totalVotes * 0.05) * 100;
+
+  const handleSubscribe = () => {
+    if (email && email.includes("@")) {
+      subscribeMutation.mutate(email);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#050608] relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-0 sm:p-4 bg-[#050608] relative overflow-hidden">
       {/* Background Ambient Effects */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none" />
@@ -23,7 +62,7 @@ export default function Home() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="w-full max-w-[380px] bg-[#12141c] rounded-[32px] border border-white/5 shadow-2xl overflow-hidden relative mx-auto"
+        className="w-full max-w-full sm:max-w-[380px] bg-[#12141c] rounded-none sm:rounded-[32px] border-0 sm:border border-white/5 shadow-2xl overflow-hidden relative mx-auto"
       >
         {/* Info Box Overlay */}
         <AnimatePresence>
@@ -50,10 +89,10 @@ export default function Home() {
                 
                 <div className="space-y-4 text-white/80 text-sm leading-relaxed">
                   <p>
-                    The math is simple: for every 100 times you listen to my music, I’m putting $5 toward a cause that matters. I don’t choose the charity, you do. Cast your vote below, and we’ll turn those listens into something real.
+                    The math is simple: for every 100 times you listen to my music, I'm putting $5 toward a cause that matters. I don't choose the charity, you do. Cast your vote below, and we'll turn those listens into something real.
                   </p>
                   <blockquote className="border-l-2 border-primary/30 pl-4 py-1 text-xs text-white/60 italic leading-loose">
-                    “Each time a man stands up for an ideal... he sends forth a tiny ripple of hope.” <br/>
+                    "Each time a man stands up for an ideal... he sends forth a tiny ripple of hope." <br/>
                     <span className="text-primary/60 not-italic font-bold">— Robert F. Kennedy</span>
                   </blockquote>
                 </div>
@@ -151,7 +190,7 @@ export default function Home() {
             <div className="relative h-3 w-full bg-black/40 rounded-full mb-3 border border-white/5 shadow-inner">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: "75%" }}
+                animate={{ width: `${leadingCharity?.percentage || 0}%` }}
                 transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
                 className="absolute top-0 left-0 h-full bg-primary rounded-full"
                 style={{
@@ -172,8 +211,10 @@ export default function Home() {
             
             <div className="flex justify-between items-end">
               <div>
-                <div className="text-xl font-bold text-white mb-0.5">$12,450</div>
-                <div className="text-[10px] text-white/40 uppercase tracking-wide font-medium">Raised for Music Cares</div>
+                <div className="text-xl font-bold text-white mb-0.5">${raised.toLocaleString()}</div>
+                <div className="text-[10px] text-white/40 uppercase tracking-wide font-medium">
+                  Raised for {leadingCharity?.name || "Charity"}
+                </div>
               </div>
               <Button 
                 onClick={() => setLocation("/vote")}
@@ -217,18 +258,31 @@ export default function Home() {
               <p className="text-[10px] text-white/40 leading-relaxed font-medium">Get exclusive updates on tour dates and new music.</p>
             </div>
             
-            <div className="flex gap-2">
-              <Input 
-                placeholder="email@example.com" 
-                className="bg-black/20 border-white/5 h-10 text-xs text-white placeholder:text-white/20 rounded-xl focus:ring-primary focus:border-primary"
-              />
-              <Button 
-                size="icon" 
-                className="h-10 w-10 shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-[0_0_15px_rgba(45,212,191,0.3)] transition-all active:scale-95"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
+            {subscribed ? (
+              <div className="flex items-center gap-2 text-primary py-2">
+                <Check className="w-4 h-4" />
+                <span className="text-sm font-bold">You're in! Check your inbox.</span>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="email@example.com" 
+                  className="bg-black/20 border-white/5 h-10 text-xs text-white placeholder:text-white/20 rounded-xl focus:ring-primary focus:border-primary"
+                  data-testid="input-email"
+                />
+                <Button 
+                  onClick={handleSubscribe}
+                  disabled={subscribeMutation.isPending}
+                  size="icon" 
+                  className="h-10 w-10 shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-[0_0_15px_rgba(45,212,191,0.3)] transition-all active:scale-95"
+                  data-testid="button-subscribe"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
           </motion.div>
 
         </div>
@@ -257,19 +311,10 @@ function LinkItem({ icon, label, delay }: { icon: React.ReactNode, label: string
   );
 }
 
-// Simple Icon Components for brands
 function SpotifyIcon(props: any) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
       <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-    </svg>
-  );
-}
-
-function AppleMusicIcon(props: any) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M19.141 3.511c.904 0 1.637.733 1.637 1.637v13.704c0 .904-.733 1.637-1.637 1.637h-14.282c-.904 0-1.637-.733-1.637-1.637v-13.704c0-.904.733-1.637 1.637-1.637h14.282zm-.575 4.603c-.63 0-1.157.408-1.344.966-.544.02-1.042.115-1.488.275v-1.602c0-.501-.366-.921-.853-1.002-.511-.086-.991.196-1.144.664-.176.541-.301 1.054-.301 1.054s-.241.693-.523.864c-.383.233-.865.233-1.248 0-.282-.171-.523-.864-.523-.864s-.125-.513-.301-1.054c-.153-.468-.633-.75-1.144-.664-.487.081-.853.501-.853 1.002v6.626c0 1.942 1.574 3.516 3.516 3.516s3.516-1.574 3.516-3.516v-4.137c0-.286.232-.518.518-.518.17 0 .323.082.417.208.106.14.168.314.168.503v1.758c0 1.517 1.229 2.747 2.747 2.747s2.747-1.23 2.747-2.747v-1.666c0-.904-.733-1.637-1.637-1.637z"/>
     </svg>
   );
 }

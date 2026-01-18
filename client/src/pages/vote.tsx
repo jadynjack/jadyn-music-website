@@ -4,39 +4,67 @@ import { ExternalLink, Music, Play, Heart, ChevronRight, Send, CheckCircle2 } fr
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jpg";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-
 import logoImage from "@assets/logo-white_1768735494982.png";
 
-const CHARITIES = [
-  { id: "music-cares", name: "Music Cares", initialVotes: 45 },
-  { id: "save-the-music", name: "Save The Music", initialVotes: 30 },
-  { id: "girls-rock", name: "Girls Rock Camp", initialVotes: 25 },
-];
+interface CharityData {
+  id: string;
+  name: string;
+  voteCount: number;
+  percentage: number;
+}
 
 export default function Vote() {
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const [selectedCharity, setSelectedCharity] = React.useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [email, setEmail] = React.useState("");
   const [hasVoted, setHasVoted] = React.useState(false);
   const [showThankYou, setShowThankYou] = React.useState(false);
+  const [voteError, setVoteError] = React.useState<string | null>(null);
+  const [resultsCharities, setResultsCharities] = React.useState<CharityData[]>([]);
+
+  const { data: charities, isLoading } = useQuery<CharityData[]>({
+    queryKey: ["/api/charities"],
+  });
+
+  const voteMutation = useMutation({
+    mutationFn: async ({ charityId, email }: { charityId: string; email: string }) => {
+      const res = await apiRequest("POST", "/api/votes", { charityId, email });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to vote");
+      }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setResultsCharities(data.charities);
+      setIsModalOpen(false);
+      setHasVoted(true);
+      queryClient.invalidateQueries({ queryKey: ["/api/charities"] });
+      setTimeout(() => {
+        setShowThankYou(true);
+      }, 4000);
+    },
+    onError: (error: Error) => {
+      setVoteError(error.message);
+    },
+  });
 
   const handleVoteClick = (id: string) => {
     if (hasVoted) return;
     setSelectedCharity(id);
+    setVoteError(null);
     setIsModalOpen(true);
   };
 
   const handleVoteSubmit = () => {
-    if (!email) return;
-    setIsModalOpen(false);
-    setHasVoted(true);
-    // Automatically transition to thank you after 3 seconds of showing results
-    setTimeout(() => {
-      setShowThankYou(true);
-    }, 4000);
+    if (!email || !selectedCharity) return;
+    voteMutation.mutate({ charityId: selectedCharity, email });
   };
 
   const shareLink = `${window.location.origin}/vote`;
@@ -48,8 +76,10 @@ export default function Vote() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const displayCharities = hasVoted ? resultsCharities : charities;
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#050608] relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-0 sm:p-4 bg-[#050608] relative overflow-hidden">
       {/* Background Ambient Effects */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none" />
@@ -58,7 +88,7 @@ export default function Vote() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-[380px] bg-[#12141c] rounded-[32px] border border-white/5 shadow-2xl overflow-hidden relative mx-auto"
+        className="w-full max-w-full sm:max-w-[380px] bg-[#12141c] rounded-none sm:rounded-[32px] border-0 sm:border border-white/5 shadow-2xl overflow-hidden relative mx-auto"
       >
         <AnimatePresence mode="wait">
           {!showThankYou ? (
@@ -99,25 +129,30 @@ export default function Vote() {
                       exit={{ opacity: 0 }}
                       className="space-y-3"
                     >
-                      {CHARITIES.map((charity, index) => (
-                        <motion.button
-                          key={charity.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          onClick={() => handleVoteClick(charity.id)}
-                          className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98] ${
-                            selectedCharity === charity.id 
-                              ? "bg-primary/10 border-primary/50 text-primary" 
-                              : "bg-[#1a1d26] border-white/5 text-white/90 hover:border-white/10"
-                          }`}
-                        >
-                          <span className="text-sm font-bold uppercase tracking-wider">{charity.name}</span>
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedCharity === charity.id ? "border-primary bg-primary" : "border-white/10"}`}>
-                            {selectedCharity === charity.id && <div className="w-2 h-2 bg-black rounded-full" />}
-                          </div>
-                        </motion.button>
-                      ))}
+                      {isLoading ? (
+                        <div className="text-white/40 text-center py-8">Loading charities...</div>
+                      ) : (
+                        charities?.map((charity, index) => (
+                          <motion.button
+                            key={charity.id}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            onClick={() => handleVoteClick(charity.id)}
+                            className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98] ${
+                              selectedCharity === charity.id 
+                                ? "bg-primary/10 border-primary/50 text-primary" 
+                                : "bg-[#1a1d26] border-white/5 text-white/90 hover:border-white/10"
+                            }`}
+                            data-testid={`button-charity-${charity.id}`}
+                          >
+                            <span className="text-sm font-bold uppercase tracking-wider">{charity.name}</span>
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedCharity === charity.id ? "border-primary bg-primary" : "border-white/10"}`}>
+                              {selectedCharity === charity.id && <div className="w-2 h-2 bg-black rounded-full" />}
+                            </div>
+                          </motion.button>
+                        ))
+                      )}
                     </motion.div>
                   ) : (
                     <motion.div 
@@ -135,21 +170,20 @@ export default function Vote() {
                       </div>
 
                       <div className="space-y-5">
-                        {CHARITIES.map((charity) => {
+                        {displayCharities?.map((charity) => {
                           const isSelected = charity.id === selectedCharity;
-                          const percentage = isSelected ? charity.initialVotes + 1 : charity.initialVotes;
                           return (
                             <div key={charity.id} className="space-y-2">
                               <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
                                 <span className={isSelected ? "text-primary" : "text-white/60"}>
                                   {charity.name} {isSelected && "(Your Vote)"}
                                 </span>
-                                <span className="text-white">{percentage}%</span>
+                                <span className="text-white">{charity.percentage}%</span>
                               </div>
                               <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
                                 <motion.div 
                                   initial={{ width: 0 }}
-                                  animate={{ width: `${percentage}%` }}
+                                  animate={{ width: `${charity.percentage}%` }}
                                   transition={{ duration: 1, ease: "easeOut" }}
                                   className={`h-full rounded-full ${isSelected ? "bg-primary shadow-[0_0_10px_rgba(45,212,191,0.5)]" : "bg-white/20"}`}
                                 />
@@ -162,6 +196,7 @@ export default function Vote() {
                       <Button 
                         onClick={() => setShowThankYou(true)}
                         className="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-bold uppercase tracking-widest text-[10px] h-10"
+                        data-testid="button-continue"
                       >
                         Continue
                       </Button>
@@ -192,9 +227,10 @@ export default function Vote() {
                 <Button 
                   onClick={() => window.open('https://spotify.com', '_blank')}
                   className="w-full h-14 bg-[#1DB954] hover:bg-[#1DB954]/90 text-white rounded-2xl flex items-center justify-center gap-3 font-bold uppercase tracking-widest shadow-lg active:scale-[0.98] transition-all"
+                  data-testid="button-stream"
                 >
                   <Music className="w-5 h-5" />
-                  Stream RAINBOW
+                  Listen to RAINBOW
                 </Button>
 
                 <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-3">
@@ -206,6 +242,7 @@ export default function Vote() {
                     <Button 
                       onClick={copyToClipboard}
                       className="h-10 px-4 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
+                      data-testid="button-copy-link"
                     >
                       {copied ? "Copied" : "Copy"}
                     </Button>
@@ -217,6 +254,7 @@ export default function Vote() {
                 onClick={() => setLocation("/")}
                 variant="ghost" 
                 className="text-[10px] font-bold uppercase tracking-widest text-white/20 hover:text-white"
+                data-testid="button-return"
               >
                 Return to Profile
               </Button>
@@ -229,24 +267,31 @@ export default function Vote() {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="bg-[#12141c] border-white/10 text-white rounded-[2rem] max-w-[340px]">
           <DialogHeader className="space-y-3">
-            <DialogTitle className="text-xl font-display font-bold italic uppercase italic">Confirm Your Vote</DialogTitle>
+            <DialogTitle className="text-xl font-display font-bold italic uppercase">Confirm Your Vote</DialogTitle>
             <DialogDescription className="text-white/40 text-xs">
-              Please enter your email to finalize your vote for {CHARITIES.find(c => c.id === selectedCharity)?.name}.
+              Please enter your email to finalize your vote for {charities?.find(c => c.id === selectedCharity)?.name}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
+            {voteError && (
+              <div className="text-red-400 text-xs bg-red-400/10 border border-red-400/20 rounded-lg p-3">
+                {voteError}
+              </div>
+            )}
             <Input 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email" 
               className="bg-black/20 border-white/5 h-12 text-sm text-white placeholder:text-white/20 rounded-xl"
+              data-testid="input-vote-email"
             />
             <Button 
               onClick={handleVoteSubmit}
-              disabled={!email}
+              disabled={!email || voteMutation.isPending}
               className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(45,212,191,0.3)] transition-all active:scale-95"
+              data-testid="button-submit-vote"
             >
-              Vote Now
+              {voteMutation.isPending ? "Voting..." : "Vote Now"}
             </Button>
           </div>
         </DialogContent>
