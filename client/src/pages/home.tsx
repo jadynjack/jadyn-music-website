@@ -63,7 +63,7 @@ export default function Home() {
               transition={{ delay: 0.3 }}
               className="font-display text-5xl font-black italic tracking-tighter text-white mb-2 drop-shadow-xl uppercase"
             >
-              Midnight
+              RAINBOW
             </motion.h2>
             
             <motion.p 
@@ -90,7 +90,7 @@ export default function Home() {
             <div className="flex justify-between items-center mb-3">
               <div className="flex items-center gap-2 text-white/90">
                 <Heart className="w-4 h-4 fill-primary text-primary" />
-                <span className="text-[10px] font-bold tracking-wider uppercase">Tour Charity Goal</span>
+                <span className="text-[10px] font-bold tracking-wider uppercase">100 Streams = $5 to charity</span>
               </div>
               <span className="text-[10px] font-bold text-white/60">75%</span>
             </div>

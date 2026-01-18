@@ -194,7 +194,7 @@ export default function Vote() {
                   className="w-full h-14 bg-[#1DB954] hover:bg-[#1DB954]/90 text-white rounded-2xl flex items-center justify-center gap-3 font-bold uppercase tracking-widest shadow-lg active:scale-[0.98] transition-all"
                 >
                   <Music className="w-5 h-5" />
-                  Stream Midnight
+                  Stream RAINBOW
                 </Button>
 
                 <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-3">
