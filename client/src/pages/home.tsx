@@ -30,7 +30,7 @@ export default function Home() {
             <img 
               src={portraitImage} 
               alt="Vanya - Midnight" 
-              className="w-full h-full object-cover opacity-90"
+              className="w-full h-full object-cover opacity-90 object-[20%_center]"
             />
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#12141c] via-[#12141c]/20 to-transparent" />

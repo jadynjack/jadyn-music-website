@@ -68,7 +68,7 @@ export default function Vote() {
                 <div className="absolute inset-0">
                   <img 
                     src={portraitImage} 
-                    className="w-full h-full object-cover opacity-80"
+                    className="w-full h-full object-cover opacity-80 object-[20%_center]"
                     alt="Vanya"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#12141c] via-[#12141c]/40 to-transparent" />
