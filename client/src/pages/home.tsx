@@ -42,7 +42,7 @@ export default function Home() {
             <img 
               src={logoImage} 
               alt="Logo" 
-              className="h-20 w-auto object-contain drop-shadow-lg"
+              className="h-32 w-auto object-contain drop-shadow-lg"
             />
           </div>
 

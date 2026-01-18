@@ -78,7 +78,7 @@ export default function Vote() {
                   <img 
                     src={logoImage} 
                     alt="Logo" 
-                    className="h-16 w-auto object-contain drop-shadow-lg"
+                    className="h-24 w-auto object-contain drop-shadow-lg"
                   />
                 </div>
 
