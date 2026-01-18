@@ -7,6 +7,8 @@ import { useLocation } from "wouter";
 import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jpg";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
+import logoImage from "@assets/logo-white_1768735494982.png";
+
 const CHARITIES = [
   { id: "music-cares", name: "Music Cares", initialVotes: 45 },
   { id: "save-the-music", name: "Save The Music", initialVotes: 30 },
@@ -72,8 +74,12 @@ export default function Vote() {
                   <div className="absolute inset-0 bg-gradient-to-t from-[#12141c] via-[#12141c]/40 to-transparent" />
                 </div>
 
-                <div className="absolute top-8 left-0 right-0 text-center z-10">
-                  <h1 className="font-display text-2xl font-bold tracking-[0.2em] text-white uppercase">Vanya</h1>
+                <div className="absolute top-8 left-0 right-0 flex justify-center z-10">
+                  <img 
+                    src={logoImage} 
+                    alt="Logo" 
+                    className="h-16 w-auto object-contain drop-shadow-lg"
+                  />
                 </div>
 
                 <div className="absolute bottom-0 left-0 right-0 p-8 pt-20 flex flex-col items-center text-center z-10">

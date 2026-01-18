@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
 import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jpg";
 
+import logoImage from "@assets/logo-white_1768735494982.png";
+
 export default function Home() {
   const [, setLocation] = useLocation();
 
@@ -36,10 +38,12 @@ export default function Home() {
           </div>
 
           {/* Top Artist Name */}
-          <div className="absolute top-8 left-0 right-0 text-center z-10">
-            <h1 className="font-display text-2xl font-bold tracking-[0.2em] text-white drop-shadow-lg uppercase">
-              Vanya
-            </h1>
+          <div className="absolute top-8 left-0 right-0 flex justify-center z-10">
+            <img 
+              src={logoImage} 
+              alt="Logo" 
+              className="h-20 w-auto object-contain drop-shadow-lg"
+            />
           </div>
 
           {/* Song Info (Bottom of Image) */}
