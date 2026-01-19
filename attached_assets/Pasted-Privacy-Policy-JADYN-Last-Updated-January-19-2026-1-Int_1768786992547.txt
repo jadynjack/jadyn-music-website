@@ -1,0 +1,52 @@
+Privacy Policy: JADYN
+Last Updated: January 19, 2026
+
+1. Introduction
+This Privacy Policy describes how JADYN ("we," "us," or "our") collects, uses, and shares your personal information when you visit jadynmusic.com (the "Site"). We value transparency and are committed to protecting the privacy of our listeners.
+
+2. Information We Collect
+Voluntary Information: We collect information you provide directly to us, such as your name and email address when you sign up for the JADYN mailing list, enter a contest, or contact us.
+
+Automated Information: When you visit the Site, we automatically collect certain information about your device, including your IP address, browser type, and how you interact with the Site via cookies and tracking pixels (such as the Meta Pixel).
+
+Third-Party Data: If you connect with JADYN via platforms like Spotify, Apple Music, or YouTube, we may receive basic profile information as authorized by those services' privacy settings.
+
+3. How We Use Your Data
+We use the information collected for the following purposes:
+
+Marketing & Communication: To send you updates about new music releases, upcoming shows, and merchandise.
+
+Targeted Advertising: To create "Custom Audiences" and "Lookalike Audiences" on platforms like Meta (Facebook/Instagram) and Google to ensure our ads reach people with similar musical tastes.
+
+Analytics: To analyze website traffic and improve the user experience on jadynmusic.com.
+
+Legal Compliance: To comply with applicable laws, including the Australian Privacy Act and international data regulations.
+
+4. Consent and Opt-In
+Mailing List: By providing your email and ticking the opt-in box, you consent to receive marketing communications. We utilize a Double Opt-In process where possible to ensure your consent is verified via a confirmation email.
+
+Cookies: Upon your first visit to jadynmusic.com, you will be asked to consent to non-essential cookies. You can manage your preferences at any time through your browser settings.
+
+5. Sharing Your Information
+We do not sell your personal data. We only share information with:
+
+Service Providers: Secure platforms used for email marketing (e.g., Mailchimp), website hosting, and data analytics.
+
+Advertising Partners: Social media and search platforms for the purpose of serving relevant advertisements.
+
+Legal Requirements: If required by law or to protect our legal rights.
+
+6. International Data Transfers
+As JADYN’s music is available globally, your data may be processed in countries outside of your own. We take all reasonable steps to ensure your data is treated securely and in accordance with this policy.
+
+7. Your Rights
+You have the right to:
+
+Access the personal information we hold about you.
+
+Request the correction or deletion of your data.
+
+Opt-out of marketing at any time by clicking the "Unsubscribe" link at the bottom of our emails.
+
+8. Contact
+For any questions regarding your privacy, please contact: [Insert Your Professional Email Here].

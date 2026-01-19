@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Music, Play, Heart, ChevronRight, Send, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jpg";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import logoImage from "@assets/logo-white_1768735494982.png";
+import Footer from "@/components/Footer";
 
 interface CharityData {
   id: string;
@@ -23,6 +25,7 @@ export default function Vote() {
   const [selectedCharity, setSelectedCharity] = React.useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [email, setEmail] = React.useState("");
+  const [marketingOptIn, setMarketingOptIn] = React.useState(false);
   const [hasVoted, setHasVoted] = React.useState(false);
   const [showThankYou, setShowThankYou] = React.useState(false);
   const [voteError, setVoteError] = React.useState<string | null>(null);
@@ -33,8 +36,8 @@ export default function Vote() {
   });
 
   const voteMutation = useMutation({
-    mutationFn: async ({ charityId, email }: { charityId: string; email: string }) => {
-      const res = await apiRequest("POST", "/api/votes", { charityId, email });
+    mutationFn: async ({ charityId, email, marketingOptIn }: { charityId: string; email: string; marketingOptIn: boolean }) => {
+      const res = await apiRequest("POST", "/api/votes", { charityId, email, marketingOptIn });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to vote");
@@ -45,6 +48,7 @@ export default function Vote() {
       setResultsCharities(data.charities);
       setIsModalOpen(false);
       setHasVoted(true);
+      setMarketingOptIn(false);
       queryClient.invalidateQueries({ queryKey: ["/api/charities"] });
       setTimeout(() => {
         setShowThankYou(true);
@@ -64,7 +68,7 @@ export default function Vote() {
 
   const handleVoteSubmit = () => {
     if (!email || !selectedCharity) return;
-    voteMutation.mutate({ charityId: selectedCharity, email });
+    voteMutation.mutate({ charityId: selectedCharity, email, marketingOptIn });
   };
 
   const shareLink = `${window.location.origin}/vote`;
@@ -285,6 +289,21 @@ export default function Vote() {
               className="bg-black/20 border-white/5 h-12 text-sm text-white placeholder:text-white/20 rounded-xl"
               data-testid="input-vote-email"
             />
+            <div className="flex items-start gap-2">
+              <Checkbox 
+                id="vote-marketing-optin"
+                checked={marketingOptIn}
+                onCheckedChange={(checked) => setMarketingOptIn(checked === true)}
+                className="mt-0.5 border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                data-testid="checkbox-vote-marketing"
+              />
+              <label 
+                htmlFor="vote-marketing-optin" 
+                className="text-[10px] text-white/50 leading-relaxed cursor-pointer"
+              >
+                I agree to receive news, music releases, and marketing updates from JADYN.
+              </label>
+            </div>
             <Button 
               onClick={handleVoteSubmit}
               disabled={!email || voteMutation.isPending}
@@ -296,6 +315,8 @@ export default function Vote() {
           </div>
         </DialogContent>
       </Dialog>
+      
+      <Footer />
     </div>
   );
 }

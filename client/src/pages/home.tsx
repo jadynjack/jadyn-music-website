@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Music, Play, Heart, ChevronRight, Send, Info, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jpg";
 import appleMusicLogo from "@assets/Apple_Music_icon.svg_1768739002544.png";
 import logoImage from "@assets/logo-white_1768735494982.png";
+import Footer from "@/components/Footer";
 
 interface CharityData {
   id: string;
@@ -37,6 +39,7 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const [showInfo, setShowInfo] = React.useState(false);
   const [email, setEmail] = React.useState("");
+  const [marketingOptIn, setMarketingOptIn] = React.useState(false);
   const [subscribed, setSubscribed] = React.useState(false);
 
   const { data: charities } = useQuery<CharityData[]>({
@@ -52,13 +55,14 @@ export default function Home() {
   });
 
   const subscribeMutation = useMutation({
-    mutationFn: async (email: string) => {
-      const res = await apiRequest("POST", "/api/subscribers", { email });
+    mutationFn: async (data: { email: string; marketingOptIn: boolean }) => {
+      const res = await apiRequest("POST", "/api/subscribers", data);
       return res.json();
     },
     onSuccess: () => {
       setSubscribed(true);
       setEmail("");
+      setMarketingOptIn(false);
     },
   });
 
@@ -72,7 +76,7 @@ export default function Home() {
 
   const handleSubscribe = () => {
     if (email && email.includes("@")) {
-      subscribeMutation.mutate(email);
+      subscribeMutation.mutate({ email, marketingOptIn });
     }
   };
 
@@ -292,28 +296,47 @@ export default function Home() {
                 <span className="text-sm font-bold">You're in! Check your inbox.</span>
               </div>
             ) : (
-              <div className="flex gap-2">
-                <Input 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@example.com" 
-                  className="bg-black/20 border-white/5 h-10 text-xs text-white placeholder:text-white/20 rounded-xl focus:ring-primary focus:border-primary"
-                  data-testid="input-email"
-                />
-                <Button 
-                  onClick={handleSubscribe}
-                  disabled={subscribeMutation.isPending}
-                  size="icon" 
-                  className="h-10 w-10 shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-[0_0_15px_rgba(45,212,191,0.3)] transition-all active:scale-95"
-                  data-testid="button-subscribe"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="email@example.com" 
+                    className="bg-black/20 border-white/5 h-10 text-xs text-white placeholder:text-white/20 rounded-xl focus:ring-primary focus:border-primary"
+                    data-testid="input-email"
+                  />
+                  <Button 
+                    onClick={handleSubscribe}
+                    disabled={subscribeMutation.isPending}
+                    size="icon" 
+                    className="h-10 w-10 shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-[0_0_15px_rgba(45,212,191,0.3)] transition-all active:scale-95"
+                    data-testid="button-subscribe"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Checkbox 
+                    id="marketing-optin"
+                    checked={marketingOptIn}
+                    onCheckedChange={(checked) => setMarketingOptIn(checked === true)}
+                    className="mt-0.5 border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                    data-testid="checkbox-marketing"
+                  />
+                  <label 
+                    htmlFor="marketing-optin" 
+                    className="text-[10px] text-white/50 leading-relaxed cursor-pointer"
+                  >
+                    I agree to receive news, music releases, and marketing updates from JADYN.
+                  </label>
+                </div>
               </div>
             )}
           </motion.div>
 
         </div>
+        
+        <Footer />
       </motion.div>
     </div>
   );

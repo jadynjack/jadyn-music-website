@@ -9,6 +9,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import logoImage from "@assets/logo-white_1768735494982.png";
+import Footer from "@/components/Footer";
 
 interface StreamStatsData {
   id: string;
@@ -497,6 +498,8 @@ export default function Admin() {
             {charitiesSaved ? "Saved!" : updateCharitiesMutation.isPending ? "Saving..." : <><Save className="w-4 h-4 mr-2" />Save Charities</>}
           </Button>
         </motion.div>
+        
+        <Footer />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -15,12 +15,14 @@ export const votes = pgTable("votes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   charityId: varchar("charity_id", { length: 50 }).notNull(),
   email: text("email").notNull(),
+  marketingOptIn: boolean("marketing_opt_in").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const subscribers = pgTable("subscribers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: text("email").notNull().unique(),
+  marketingOptIn: boolean("marketing_opt_in").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -66,10 +68,12 @@ export const updateCharitiesSchema = z.object({
 export const insertVoteSchema = createInsertSchema(votes).pick({
   charityId: true,
   email: true,
+  marketingOptIn: true,
 });
 
 export const insertSubscriberSchema = createInsertSchema(subscribers).pick({
   email: true,
+  marketingOptIn: true,
 });
 
 export type InsertVote = z.infer<typeof insertVoteSchema>;
