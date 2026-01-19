@@ -8,8 +8,13 @@ import Home from "@/pages/home";
 import Vote from "@/pages/vote";
 import Admin from "@/pages/admin";
 import Privacy from "@/pages/privacy";
+import { useEffect } from "react";
+import { initGA } from "./lib/analytics";
+import { useAnalytics } from "./hooks/use-analytics";
 
 function Router() {
+  useAnalytics();
+  
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -22,6 +27,14 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
+      console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
+    } else {
+      initGA();
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
