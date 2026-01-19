@@ -83,17 +83,16 @@ export default function Vote() {
   const displayCharities = hasVoted ? resultsCharities : charities;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#050608] relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-0 sm:p-4 bg-[#050608] relative overflow-hidden">
       {/* Background Ambient Effects */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none" />
       
-      {/* Main Content - Centered */}
-      <div className="flex-1 flex items-center justify-center p-0 sm:p-4">
-        {/* Main Card Container */}
-        <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
+      {/* Main Card Container */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
         className="w-full max-w-full sm:max-w-[380px] bg-[#12141c] rounded-none sm:rounded-[32px] border-0 sm:border border-white/5 shadow-2xl overflow-hidden relative mx-auto"
       >
         <AnimatePresence mode="wait">
@@ -267,6 +266,8 @@ export default function Vote() {
             </motion.div>
           )}
         </AnimatePresence>
+        
+        <Footer />
       </motion.div>
 
       {/* Vote Modal */}
@@ -317,9 +318,6 @@ export default function Vote() {
           </div>
         </DialogContent>
       </Dialog>
-      </div>
-      
-      <Footer />
     </div>
   );
 }
