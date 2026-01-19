@@ -44,14 +44,6 @@ export const siteSettings = pgTable("site_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const contactMessages = pgTable("contact_messages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: text("email").notNull(),
-  message: text("message").notNull(),
-  isRead: boolean("is_read").notNull().default(false),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
 export const updateStreamStatsSchema = z.object({
   spotifyStreams: z.number().int().min(0),
   appleMusicStreams: z.number().int().min(0),
@@ -90,11 +82,6 @@ export const insertSubscriberSchema = z.object({
   marketingOptIn: z.boolean().default(false),
 });
 
-export const insertContactMessageSchema = z.object({
-  email: z.string().email().max(255).regex(emailRegex, "Invalid email format"),
-  message: z.string().min(10, "Message must be at least 10 characters").max(2000, "Message too long"),
-});
-
 export type InsertVote = z.infer<typeof insertVoteSchema>;
 export type Vote = typeof votes.$inferSelect;
 export type InsertSubscriber = z.infer<typeof insertSubscriberSchema>;
@@ -102,8 +89,6 @@ export type Subscriber = typeof subscribers.$inferSelect;
 export type Charity = typeof charities.$inferSelect;
 export type StreamStats = typeof streamStats.$inferSelect;
 export type SiteSettings = typeof siteSettings.$inferSelect;
-export type ContactMessage = typeof contactMessages.$inferSelect;
-export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
 export type UpdateStreamStats = z.infer<typeof updateStreamStatsSchema>;
 export type UpdateSiteSettings = z.infer<typeof updateSiteSettingsSchema>;
 export type UpdateCharities = z.infer<typeof updateCharitiesSchema>;
