@@ -97,7 +97,7 @@ export default function Vote() {
       >
         <AnimatePresence mode="wait">
           {!showThankYou ? (
-            <motion.div key="vote-content">
+            <motion.div key="vote-content" className="flex-1 flex flex-col">
               {/* Profile / Hero Section */}
               <div className="relative h-[400px] w-full">
                 <div className="absolute inset-0">
@@ -216,7 +216,7 @@ export default function Vote() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="px-8 py-12 flex flex-col items-center text-center space-y-8"
+              className="flex-1 px-8 py-12 flex flex-col items-center text-center space-y-8"
             >
               <div className="space-y-4">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
