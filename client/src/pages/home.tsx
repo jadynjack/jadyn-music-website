@@ -242,7 +242,7 @@ export default function Home() {
               <div>
                 <div className="text-xl font-bold text-white mb-0.5">${raised.toLocaleString()}</div>
                 <div className="text-[10px] text-white/40 uppercase tracking-wide font-medium">
-                  Raised for {leadingCharity?.name || "Charity"}
+                  Raised for a charity of your choice
                 </div>
               </div>
               <Button 
