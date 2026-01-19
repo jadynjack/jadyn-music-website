@@ -93,7 +93,7 @@ export default function Vote() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="w-full max-w-full sm:max-w-[380px] bg-[#12141c] rounded-none sm:rounded-[32px] border-0 sm:border border-white/5 shadow-2xl overflow-hidden relative mx-auto"
+        className="w-full max-w-full sm:max-w-[380px] min-h-screen sm:min-h-0 bg-[#12141c] rounded-none sm:rounded-[32px] border-0 sm:border border-white/5 shadow-2xl overflow-hidden relative mx-auto flex flex-col"
       >
         <AnimatePresence mode="wait">
           {!showThankYou ? (
@@ -267,7 +267,9 @@ export default function Vote() {
           )}
         </AnimatePresence>
         
-        <Footer />
+        <div className="mt-auto">
+          <Footer />
+        </div>
       </motion.div>
 
       {/* Vote Modal */}
