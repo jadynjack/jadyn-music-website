@@ -98,7 +98,6 @@ export default function Vote() {
       {/* Background Ambient Effects */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none" />
-      
       {/* Main Card Container */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -130,7 +129,7 @@ export default function Vote() {
 
                 <div className="absolute bottom-0 left-0 right-0 p-8 pt-20 flex flex-col items-center text-center z-10">
                   <h2 className="font-display text-4xl font-black italic tracking-tighter text-white mb-2 uppercase">Vote For Charity</h2>
-                  <p className="text-white/60 text-xs font-medium tracking-wide max-w-[240px]">Every 100 streams of my music triggers a $5 donation. Pick where the money goes:</p>
+                  <p className="text-white/60 font-medium tracking-wide max-w-[240px] text-[14px]">Every 100 streams of my music triggers a $5 donation. Pick where the money goes:</p>
                 </div>
               </div>
 
@@ -289,7 +288,6 @@ export default function Vote() {
           <Footer />
         </div>
       </motion.div>
-
       {/* Vote Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="bg-[#12141c] border-white/10 text-white rounded-[2rem] max-w-[340px]">
