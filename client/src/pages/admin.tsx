@@ -41,7 +41,7 @@ export default function Admin() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { user, isLoading: authLoading, isAuthenticated, logout } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated, isAdmin, logout } = useAuth();
   
   const [spotify, setSpotify] = React.useState("");
   const [appleMusic, setAppleMusic] = React.useState("");
@@ -218,6 +218,37 @@ export default function Admin() {
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Site
+          </Button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-[#050608]">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-[380px] bg-[#12141c] rounded-[32px] border border-white/5 shadow-2xl p-8 text-center"
+        >
+          <img src={logoImage} alt="Logo" className="h-12 w-auto mx-auto mb-6" />
+          <h1 className="font-display text-2xl font-black italic uppercase tracking-tighter text-white mb-2">Access Denied</h1>
+          <p className="text-white/40 text-sm mb-8">You don't have permission to access this page.</p>
+          <Button 
+            onClick={() => setLocation("/")}
+            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest rounded-xl"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Site
+          </Button>
+          <Button 
+            onClick={() => logout()}
+            variant="ghost" 
+            className="mt-4 text-white/40 hover:text-white"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
           </Button>
         </motion.div>
       </div>

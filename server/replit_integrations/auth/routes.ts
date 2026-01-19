@@ -8,8 +8,14 @@ export function registerAuthRoutes(app: Express): void {
   app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      const userEmail = req.user.claims.email;
+      const adminEmail = process.env.ADMIN_EMAIL;
       const user = await authStorage.getUser(userId);
-      res.json(user);
+      
+      res.json({
+        ...user,
+        isAdmin: adminEmail ? userEmail === adminEmail : false
+      });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
