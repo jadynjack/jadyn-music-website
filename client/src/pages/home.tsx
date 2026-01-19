@@ -238,18 +238,18 @@ export default function Home() {
               />
             </div>
             
-            <div className="flex justify-between items-end">
+            <div className="flex justify-between items-start">
               <div>
                 <div className="text-xl font-bold text-white mb-0.5">${raised.toLocaleString()}</div>
-                <div className="text-[10px] text-white/40 uppercase tracking-wide font-medium">
-                  Raised for a charity of your choice
+                <div className="text-[10px] text-white/40 uppercase tracking-wide font-medium leading-relaxed">
+                  Raised for a charity<br />of your choice
                 </div>
               </div>
               <Button 
                 onClick={() => setLocation("/vote")}
                 variant="ghost" 
                 size="sm" 
-                className="h-7 text-[10px] font-bold text-primary hover:text-primary hover:bg-primary/10 px-3 uppercase tracking-wider -mr-2"
+                className="h-7 text-[10px] font-bold text-primary hover:text-primary hover:bg-primary/10 px-3 uppercase tracking-wider -mr-2 mt-1"
               >
                 Vote For Charity
               </Button>
