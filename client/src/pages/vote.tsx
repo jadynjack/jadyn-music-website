@@ -10,6 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jpg";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import logoImage from "@assets/logo-white_1768735494982.png";
+import appleMusicLogo from "@assets/Apple_Music_icon.svg_1768739002544.png";
 import Footer from "@/components/Footer";
 
 interface CharityData {
@@ -17,6 +18,12 @@ interface CharityData {
   name: string;
   voteCount: number;
   percentage: number;
+}
+
+interface SiteSettings {
+  spotifyLink: string;
+  appleMusicLink: string;
+  youtubeMusicLink: string;
 }
 
 export default function Vote() {
@@ -33,6 +40,10 @@ export default function Vote() {
 
   const { data: charities, isLoading } = useQuery<CharityData[]>({
     queryKey: ["/api/charities"],
+  });
+
+  const { data: siteSettings } = useQuery<SiteSettings>({
+    queryKey: ["/api/site-settings"],
   });
 
   const voteMutation = useMutation({
@@ -228,17 +239,24 @@ export default function Vote() {
                 </p>
               </div>
 
-              <div className="w-full space-y-4">
-                <Button 
-                  onClick={() => window.open('https://spotify.com', '_blank')}
-                  className="w-full h-14 bg-[#1DB954] hover:bg-[#1DB954]/90 text-white rounded-2xl flex items-center justify-center gap-3 font-bold uppercase tracking-widest shadow-lg active:scale-[0.98] transition-all"
-                  data-testid="button-stream"
-                >
-                  <Music className="w-5 h-5" />
-                  Listen to RAINBOW
-                </Button>
+              <div className="w-full space-y-3">
+                <StreamLink
+                  icon={<SpotifyIcon className="w-5 h-5 text-[#1DB954]" />}
+                  label="Listen on Spotify"
+                  href={siteSettings?.spotifyLink}
+                />
+                <StreamLink
+                  icon={<img src={appleMusicLogo} alt="Apple Music" className="w-6 h-6 object-contain rounded-[4px]" />}
+                  label="Listen on Apple Music"
+                  href={siteSettings?.appleMusicLink}
+                />
+                <StreamLink
+                  icon={<YoutubeIcon className="w-5 h-5 text-[#FF0000]" />}
+                  label="Listen on YouTube Music"
+                  href={siteSettings?.youtubeMusicLink}
+                />
 
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-3">
+                <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-3 mt-4">
                   <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Share & Support</p>
                   <div className="flex gap-2">
                     <div className="flex-1 bg-black/40 border border-white/5 rounded-xl h-10 px-3 flex items-center overflow-hidden">
@@ -321,5 +339,41 @@ export default function Vote() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function StreamLink({ icon, label, href }: { icon: React.ReactNode, label: string, href?: string }) {
+  return (
+    <a
+      href={href || "#"}
+      target={href ? "_blank" : undefined}
+      rel={href ? "noopener noreferrer" : undefined}
+      className="flex items-center justify-between p-4 bg-[#1a1d26] hover:bg-[#20242e] border border-white/5 rounded-2xl transition-all group cursor-pointer active:scale-[0.98] hover:border-white/10"
+      data-testid={`link-${label.toLowerCase().replace(/\s+/g, '-')}`}
+    >
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center group-hover:bg-white/5 transition-colors border border-white/5">
+          {icon}
+        </div>
+        <span className="text-sm font-bold text-white/90 group-hover:text-white transition-colors">{label}</span>
+      </div>
+      <ExternalLink className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
+    </a>
+  );
+}
+
+function SpotifyIcon(props: any) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+    </svg>
+  );
+}
+
+function YoutubeIcon(props: any) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+    </svg>
   );
 }
