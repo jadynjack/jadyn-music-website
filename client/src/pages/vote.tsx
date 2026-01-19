@@ -130,7 +130,7 @@ export default function Vote() {
 
                 <div className="absolute bottom-0 left-0 right-0 p-8 pt-20 flex flex-col items-center text-center z-10">
                   <h2 className="font-display text-4xl font-black italic tracking-tighter text-white mb-2 uppercase">Vote For Charity</h2>
-                  <p className="text-white/60 text-xs font-medium tracking-wide max-w-[280px]">For every 100 times you stream my music, I'm donating $5 to one of the charities below (you tell me where you think it should go). It's a small thing, but I'd rather the money go to someone who actually needs it than a billionaire's pocket.</p>
+                  <p className="text-white/60 text-xs font-medium tracking-wide max-w-[240px]">Every 100 streams of my music triggers a $5 donation. Pick where the money goes:</p>
                 </div>
               </div>
 
