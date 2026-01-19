@@ -58,22 +58,28 @@ export const updateSiteSettingsSchema = z.object({
   youtubeMusicLink: z.string().optional(),
 });
 
+// Regex for safe charity IDs: alphanumeric, hyphens, underscores only
+const safeIdRegex = /^[a-z0-9_-]+$/;
+
 export const updateCharitiesSchema = z.object({
   charities: z.array(z.object({
-    id: z.string().min(1),
-    name: z.string().min(1),
+    id: z.string().min(1).max(50).regex(safeIdRegex, "ID must contain only lowercase letters, numbers, hyphens, and underscores"),
+    name: z.string().min(1).max(100),
   })).min(1).max(5),
 });
 
-export const insertVoteSchema = createInsertSchema(votes).pick({
-  charityId: true,
-  email: true,
-  marketingOptIn: true,
+// Proper email validation regex
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export const insertVoteSchema = z.object({
+  charityId: z.string().min(1).max(50).regex(safeIdRegex),
+  email: z.string().email().max(255).regex(emailRegex, "Invalid email format"),
+  marketingOptIn: z.boolean().default(false),
 });
 
-export const insertSubscriberSchema = createInsertSchema(subscribers).pick({
-  email: true,
-  marketingOptIn: true,
+export const insertSubscriberSchema = z.object({
+  email: z.string().email().max(255).regex(emailRegex, "Invalid email format"),
+  marketingOptIn: z.boolean().default(false),
 });
 
 export type InsertVote = z.infer<typeof insertVoteSchema>;

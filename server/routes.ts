@@ -13,7 +13,13 @@ const isAdmin: RequestHandler = (req, res, next) => {
   const adminEmail = process.env.ADMIN_EMAIL;
   const userEmail = user.claims.email;
   
-  if (adminEmail && userEmail !== adminEmail) {
+  // SECURITY: If ADMIN_EMAIL is not set, deny all admin access
+  if (!adminEmail) {
+    return res.status(403).json({ message: "Forbidden: Admin not configured" });
+  }
+  
+  // Case-insensitive email comparison for security
+  if (userEmail?.toLowerCase() !== adminEmail.toLowerCase()) {
     return res.status(403).json({ message: "Forbidden: Admin access required" });
   }
   

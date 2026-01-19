@@ -14,7 +14,7 @@ export function registerAuthRoutes(app: Express): void {
       
       res.json({
         ...user,
-        isAdmin: adminEmail ? userEmail === adminEmail : false
+        isAdmin: adminEmail ? userEmail?.toLowerCase() === adminEmail.toLowerCase() : false
       });
     } catch (error) {
       console.error("Error fetching user:", error);
