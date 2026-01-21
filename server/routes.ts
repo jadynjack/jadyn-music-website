@@ -75,6 +75,12 @@ export async function registerRoutes(
 
       const vote = await storage.createVote(result.data);
       
+      // Also add voter to subscribers to preserve email if votes are reset
+      await storage.createSubscriber({
+        email: result.data.email,
+        marketingOptIn: result.data.marketingOptIn || false,
+      });
+      
       const charities = await storage.getCharities();
       const voteCounts = await storage.getVoteCounts();
       const totalVotes = voteCounts.reduce((sum, c) => sum + c.count, 0);
