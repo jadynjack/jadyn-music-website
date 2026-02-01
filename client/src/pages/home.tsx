@@ -35,7 +35,8 @@ interface SiteSettingsData {
   youtubeMusicLink: string;
   presaveEnabled: boolean;
   presaveTitle: string;
-  presaveLink: string;
+  presaveSpotifyLink: string;
+  presaveAppleMusicLink: string;
 }
 
 export default function Home() {
@@ -198,49 +199,69 @@ export default function Home() {
         {/* Content Section */}
         <div className="px-5 pb-8 space-y-5">
           
+          {/* Pre-Save Section */}
+          {siteSettings?.presaveEnabled && siteSettings?.presaveTitle && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-2xl p-5"
+              data-testid="section-presave"
+            >
+              <div className="space-y-1 mb-4">
+                <span className="text-[10px] font-bold tracking-widest text-primary/80 uppercase">Pre-Save Now</span>
+                <h2 className="text-lg font-bold text-white">{siteSettings.presaveTitle}</h2>
+              </div>
+              <div className="flex gap-3">
+                {siteSettings.presaveSpotifyLink && (
+                  <a
+                    href={siteSettings.presaveSpotifyLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-[#1DB954] hover:bg-[#1DB954]/90 rounded-xl text-white font-bold text-sm transition-all active:scale-95"
+                    data-testid="link-presave-spotify"
+                  >
+                    <SpotifyIcon className="w-5 h-5" />
+                    Spotify
+                  </a>
+                )}
+                {siteSettings.presaveAppleMusicLink && (
+                  <a
+                    href={siteSettings.presaveAppleMusicLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-[#FA233B] to-[#FB5C74] hover:opacity-90 rounded-xl text-white font-bold text-sm transition-all active:scale-95"
+                    data-testid="link-presave-apple"
+                  >
+                    <img src={appleMusicLogo} alt="Apple Music" className="w-5 h-5 object-contain rounded-[3px]" />
+                    Apple
+                  </a>
+                )}
+              </div>
+            </motion.div>
+          )}
+
           {/* Streaming Links */}
           <div className="space-y-3">
             <LinkItem 
-              delay={0.5}
+              delay={0.6}
               icon={<SpotifyIcon className="w-5 h-5 text-[#1DB954]" />}
               label="Listen on Spotify"
               href={siteSettings?.spotifyLink}
             />
             <LinkItem 
-              delay={0.6}
+              delay={0.7}
               icon={<img src={appleMusicLogo} alt="Apple Music" className="w-6 h-6 object-contain rounded-[4px]" />}
               label="Listen on Apple Music"
               href={siteSettings?.appleMusicLink}
             />
             <LinkItem 
-              delay={0.7}
+              delay={0.8}
               icon={<YoutubeIcon className="w-5 h-5 text-[#FF0000]" />}
               label="Listen on YouTube Music"
               href={siteSettings?.youtubeMusicLink}
             />
           </div>
-
-          {/* Pre-Save Section */}
-          {siteSettings?.presaveEnabled && siteSettings?.presaveTitle && (
-            <motion.a
-              href={siteSettings.presaveLink || "#"}
-              target={siteSettings.presaveLink ? "_blank" : undefined}
-              rel={siteSettings.presaveLink ? "noopener noreferrer" : undefined}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.75 }}
-              className="block bg-gradient-to-r from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 border border-primary/30 rounded-2xl p-5 transition-all group cursor-pointer active:scale-[0.98]"
-              data-testid="link-presave"
-            >
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold tracking-widest text-primary/80 uppercase">Pre-Save Now</span>
-                  <h2 className="text-lg font-bold text-white group-hover:text-primary transition-colors">{siteSettings.presaveTitle}</h2>
-                </div>
-                <ExternalLink className="w-5 h-5 text-primary/60 group-hover:text-primary transition-colors" />
-              </div>
-            </motion.a>
-          )}
 
           {/* Charity Goal */}
           <motion.div 
