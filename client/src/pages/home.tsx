@@ -11,6 +11,7 @@ import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jp
 import appleMusicLogo from "@assets/Apple_Music_icon.svg_1768739002544.png";
 import logoImage from "@assets/logo-white_1768735494982.png";
 import Footer from "@/components/Footer";
+import { ttqViewContent, ttqClickButton, ttqLead } from "@/lib/tiktokPixel";
 
 interface CharityData {
   id: string;
@@ -77,8 +78,13 @@ export default function Home() {
   const totalStreams = streamStats?.totalStreams || 0;
   const progressPercent = Math.min((totalStreams / 100000) * 100, 100);
 
+  React.useEffect(() => {
+    ttqViewContent("home", "JADYN Home Page");
+  }, []);
+
   const handleSubscribe = () => {
     if (email && email.includes("@")) {
+      ttqLead(email, "subscribe", "Email Signup");
       subscribeMutation.mutate({ email, marketingOptIn });
     }
   };
@@ -346,11 +352,16 @@ export default function Home() {
 }
 
 function LinkItem({ icon, label, delay, href }: { icon: React.ReactNode, label: string, delay: number, href?: string }) {
+  const handleClick = () => {
+    ttqClickButton(label.toLowerCase().replace(/\s+/g, "-"), label);
+  };
+
   return (
     <motion.a
       href={href || "#"}
       target={href ? "_blank" : undefined}
       rel={href ? "noopener noreferrer" : undefined}
+      onClick={handleClick}
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay }}

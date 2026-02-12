@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import logoImage from "@assets/logo-white_1768735494982.png";
 import appleMusicLogo from "@assets/Apple_Music_icon.svg_1768739002544.png";
 import Footer from "@/components/Footer";
+import { ttqViewContent, ttqLead } from "@/lib/tiktokPixel";
 
 interface CharityData {
   id: string;
@@ -77,8 +78,13 @@ export default function Vote() {
     setIsModalOpen(true);
   };
 
+  React.useEffect(() => {
+    ttqViewContent("vote", "Charity Vote Page");
+  }, []);
+
   const handleVoteSubmit = () => {
     if (!email || !selectedCharity) return;
+    ttqLead(email, "vote", "Charity Vote");
     voteMutation.mutate({ charityId: selectedCharity, email, marketingOptIn });
   };
 
