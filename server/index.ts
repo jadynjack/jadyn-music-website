@@ -23,11 +23,11 @@ app.use(helmet({
   contentSecurityPolicy: isProduction ? {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com", "https://analytics.tiktok.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", "https://www.google-analytics.com", "https://www.googletagmanager.com", "https://analytics.tiktok.com"],
     }
   } : false,
   crossOriginEmbedderPolicy: false,
