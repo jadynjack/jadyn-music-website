@@ -1,8 +1,10 @@
 import type { Express, RequestHandler } from "express";
 import { createServer, type Server } from "http";
+import crypto from "crypto";
 import { storage } from "./storage";
 import { insertVoteSchema, insertSubscriberSchema, updateStreamStatsSchema, updateSiteSettingsSchema, updateCharitiesSchema } from "@shared/schema";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import { sendTikTokEvent, getClientIp } from "./lib/tiktokEvents";
 
 const isAdmin: RequestHandler = (req, res, next) => {
   const user = req.user as any;
@@ -80,6 +82,17 @@ export async function registerRoutes(
         email: result.data.email,
         marketingOptIn: result.data.marketingOptIn || false,
       });
+
+      sendTikTokEvent({
+        event: "Lead",
+        eventId: req.body.eventId || crypto.randomUUID(),
+        email: result.data.email,
+        ip: getClientIp(req),
+        userAgent: req.headers["user-agent"] || "",
+        pageUrl: req.headers.referer || req.headers.origin || "",
+        contentId: "vote",
+        contentName: "Charity Vote",
+      }).catch(() => {});
       
       const charities = await storage.getCharities();
       const voteCounts = await storage.getVoteCounts();
@@ -111,6 +124,18 @@ export async function registerRoutes(
       }
 
       const subscriber = await storage.createSubscriber(result.data);
+
+      sendTikTokEvent({
+        event: "Lead",
+        eventId: req.body.eventId || crypto.randomUUID(),
+        email: result.data.email,
+        ip: getClientIp(req),
+        userAgent: req.headers["user-agent"] || "",
+        pageUrl: req.headers.referer || req.headers.origin || "",
+        contentId: "subscribe",
+        contentName: "Email Signup",
+      }).catch(() => {});
+
       res.json({ success: true, subscriber });
     } catch (error) {
       res.status(500).json({ error: "Failed to subscribe" });

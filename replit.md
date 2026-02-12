@@ -55,10 +55,20 @@ Preferred communication style: Simple, everyday language.
 - **PostgreSQL**: Required via `DATABASE_URL` environment variable
 - **Drizzle Kit**: Database migrations stored in `./migrations`
 
+### Analytics & Tracking
+- **Google Analytics**: Measurement ID `G-V5GRX79HVR` (client-side via gtag)
+- **TikTok Pixel**: Pixel ID `D66PFEBC77U67PE0F0TG` (client-side via ttq)
+- **TikTok Events API**: Server-side event tracking via `server/lib/tiktokEvents.ts`
+  - Sends Lead events for subscribes and votes
+  - Uses SHA-256 hashed emails, IP, user agent for matching
+  - Event deduplication via shared `eventId` between pixel and server
+  - Client generates `eventId` via `crypto.randomUUID()`, passes to both pixel and API
+
 ### Environment Variables Required
 - `DATABASE_URL`: PostgreSQL connection string
 - `SESSION_SECRET`: Secret for session encryption
 - `ADMIN_EMAIL`: Email address for admin access control
+- `TIKTOK_ACCESS_TOKEN`: TikTok Events API access token for server-side tracking
 - `ISSUER_URL`: OpenID Connect issuer (defaults to Replit)
 - `REPL_ID`: Replit environment identifier
 

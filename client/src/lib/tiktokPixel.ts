@@ -20,6 +20,10 @@ function getTTQ() {
   }
 }
 
+export function generateEventId(): string {
+  return crypto.randomUUID();
+}
+
 export function ttqIdentify(email: string) {
   try {
     const ttq = getTTQ();
@@ -50,13 +54,17 @@ export function ttqClickButton(contentId: string, contentName: string) {
   } catch {}
 }
 
-export function ttqLead(email: string, contentId: string, contentName: string) {
+export function ttqLead(email: string, contentId: string, contentName: string, eventId?: string) {
   try {
     const ttq = getTTQ();
     if (!ttq) return;
     ttqIdentify(email);
-    ttq.track("Lead", {
+    const trackParams: Record<string, any> = {
       contents: [{ content_id: contentId, content_type: "product", content_name: contentName }],
-    });
+    };
+    if (eventId) {
+      trackParams.event_id = eventId;
+    }
+    ttq.track("Lead", trackParams);
   } catch {}
 }

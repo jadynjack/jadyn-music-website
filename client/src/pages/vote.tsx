@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import logoImage from "@assets/logo-white_1768735494982.png";
 import appleMusicLogo from "@assets/Apple_Music_icon.svg_1768739002544.png";
 import Footer from "@/components/Footer";
-import { ttqViewContent, ttqLead } from "@/lib/tiktokPixel";
+import { ttqViewContent, ttqLead, generateEventId } from "@/lib/tiktokPixel";
 
 interface CharityData {
   id: string;
@@ -48,8 +48,8 @@ export default function Vote() {
   });
 
   const voteMutation = useMutation({
-    mutationFn: async ({ charityId, email, marketingOptIn }: { charityId: string; email: string; marketingOptIn: boolean }) => {
-      const res = await apiRequest("POST", "/api/votes", { charityId, email, marketingOptIn });
+    mutationFn: async ({ charityId, email, marketingOptIn, eventId }: { charityId: string; email: string; marketingOptIn: boolean; eventId?: string }) => {
+      const res = await apiRequest("POST", "/api/votes", { charityId, email, marketingOptIn, eventId });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to vote");
@@ -84,8 +84,9 @@ export default function Vote() {
 
   const handleVoteSubmit = () => {
     if (!email || !selectedCharity) return;
-    ttqLead(email, "vote", "Charity Vote");
-    voteMutation.mutate({ charityId: selectedCharity, email, marketingOptIn });
+    const eventId = generateEventId();
+    ttqLead(email, "vote", "Charity Vote", eventId);
+    voteMutation.mutate({ charityId: selectedCharity, email, marketingOptIn, eventId });
   };
 
   const shareLink = `${window.location.origin}/vote`;

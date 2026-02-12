@@ -11,7 +11,7 @@ import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jp
 import appleMusicLogo from "@assets/Apple_Music_icon.svg_1768739002544.png";
 import logoImage from "@assets/logo-white_1768735494982.png";
 import Footer from "@/components/Footer";
-import { ttqViewContent, ttqClickButton, ttqLead } from "@/lib/tiktokPixel";
+import { ttqViewContent, ttqClickButton, ttqLead, generateEventId } from "@/lib/tiktokPixel";
 
 interface CharityData {
   id: string;
@@ -59,7 +59,7 @@ export default function Home() {
   });
 
   const subscribeMutation = useMutation({
-    mutationFn: async (data: { email: string; marketingOptIn: boolean }) => {
+    mutationFn: async (data: { email: string; marketingOptIn: boolean; eventId?: string }) => {
       const res = await apiRequest("POST", "/api/subscribers", data);
       return res.json();
     },
@@ -84,8 +84,9 @@ export default function Home() {
 
   const handleSubscribe = () => {
     if (email && email.includes("@")) {
-      ttqLead(email, "subscribe", "Email Signup");
-      subscribeMutation.mutate({ email, marketingOptIn });
+      const eventId = generateEventId();
+      ttqLead(email, "subscribe", "Email Signup", eventId);
+      subscribeMutation.mutate({ email, marketingOptIn, eventId });
     }
   };
 
