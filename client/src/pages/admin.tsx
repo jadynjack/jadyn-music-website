@@ -570,67 +570,6 @@ export default function Admin() {
           </Button>
         </motion.div>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-[#12141c] rounded-2xl border border-white/5 p-6"
-        >
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
-              <Disc className="w-5 h-5 text-purple-400" />
-            </div>
-            <div>
-              <h2 className="text-white font-bold">Pre-Save Section</h2>
-              <p className="text-white/40 text-xs">Promote upcoming music releases</p>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between mb-5 p-4 bg-black/20 rounded-xl border border-white/5">
-            <div>
-              <div className="text-sm font-bold text-white">Enable Pre-Save</div>
-              <div className="text-[10px] text-white/40">Show section on home page</div>
-            </div>
-            <Switch 
-              checked={presaveEnabled}
-              onCheckedChange={setPresaveEnabled}
-              data-testid="switch-presave-enabled"
-            />
-          </div>
-
-          <div className="grid gap-4 mb-5">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-white/60 uppercase tracking-wider">Pre-Save Title</label>
-              <Input 
-                value={presaveTitle}
-                onChange={(e) => setPresaveTitle(e.target.value)}
-                placeholder="e.g. New Album Coming Soon"
-                className="bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl"
-                data-testid="input-presave-title"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-white/60 uppercase tracking-wider">Pre-Save Link</label>
-              <Input 
-                value={presaveLink}
-                onChange={(e) => setPresaveLink(e.target.value)}
-                placeholder="https://..."
-                className="bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl text-sm"
-                data-testid="input-presave-link"
-              />
-            </div>
-          </div>
-
-          <Button 
-            onClick={handleSavePresave}
-            disabled={updatePresaveMutation.isPending}
-            className="w-full h-11 bg-purple-500 hover:bg-purple-500/90 text-white font-bold uppercase tracking-widest rounded-xl"
-            data-testid="button-save-presave"
-          >
-            {presaveSaved ? "Saved!" : updatePresaveMutation.isPending ? "Saving..." : <><Save className="w-4 h-4 mr-2" />Save Pre-Save</>}
-          </Button>
-        </motion.div>
-        
         <Footer />
       </div>
     </div>

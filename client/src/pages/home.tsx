@@ -220,28 +220,6 @@ export default function Home() {
             />
           </div>
 
-          {/* Pre-Save Section */}
-          {siteSettings?.presaveEnabled && siteSettings?.presaveTitle && (
-            <motion.a
-              href={siteSettings.presaveLink || "#"}
-              target={siteSettings.presaveLink ? "_blank" : undefined}
-              rel={siteSettings.presaveLink ? "noopener noreferrer" : undefined}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.75 }}
-              className="block bg-gradient-to-r from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 border border-primary/30 rounded-2xl p-5 transition-all group cursor-pointer active:scale-[0.98]"
-              data-testid="link-presave"
-            >
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold tracking-widest text-primary/80 uppercase">Pre-Save Now</span>
-                  <h2 className="text-lg font-bold text-white group-hover:text-primary transition-colors">{siteSettings.presaveTitle}</h2>
-                </div>
-                <ExternalLink className="w-5 h-5 text-primary/60 group-hover:text-primary transition-colors" />
-              </div>
-            </motion.a>
-          )}
-
           {/* Charity Goal */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
