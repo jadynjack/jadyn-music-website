@@ -24,6 +24,25 @@ export function generateEventId(): string {
   return crypto.randomUUID();
 }
 
+export function getTtclid(): string | undefined {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("ttclid") || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function sendServerEvent(payload: Record<string, any>) {
+  try {
+    fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }).catch(() => {});
+  } catch {}
+}
+
 export function ttqIdentify(email: string) {
   try {
     const ttq = getTTQ();
@@ -35,36 +54,75 @@ export function ttqIdentify(email: string) {
 }
 
 export function ttqViewContent(contentId: string, contentName: string) {
+  const eventId = generateEventId();
+
   try {
     const ttq = getTTQ();
-    if (!ttq) return;
-    ttq.track("ViewContent", {
-      contents: [{ content_id: contentId, content_type: "product", content_name: contentName }],
-    });
+    if (ttq) {
+      ttq.track("ViewContent", {
+        contents: [{ content_id: contentId, content_type: "product", content_name: contentName }],
+        event_id: eventId,
+      });
+    }
   } catch {}
+
+  sendServerEvent({
+    event: "ViewContent",
+    eventId,
+    contentId,
+    contentType: "product",
+    contentName,
+    url: window.location.href,
+    ttclid: getTtclid(),
+  });
 }
 
 export function ttqClickButton(contentId: string, contentName: string) {
+  const eventId = generateEventId();
+
   try {
     const ttq = getTTQ();
-    if (!ttq) return;
-    ttq.track("ClickButton", {
-      contents: [{ content_id: contentId, content_type: "product", content_name: contentName }],
-    });
+    if (ttq) {
+      ttq.track("ClickButton", {
+        contents: [{ content_id: contentId, content_type: "product", content_name: contentName }],
+        event_id: eventId,
+      });
+    }
   } catch {}
+
+  sendServerEvent({
+    event: "ClickButton",
+    eventId,
+    contentId,
+    contentType: "product",
+    contentName,
+    url: window.location.href,
+    ttclid: getTtclid(),
+  });
 }
 
 export function ttqLead(email: string, contentId: string, contentName: string, eventId?: string) {
+  const eid = eventId || generateEventId();
+
   try {
     const ttq = getTTQ();
-    if (!ttq) return;
-    ttqIdentify(email);
-    const trackParams: Record<string, any> = {
-      contents: [{ content_id: contentId, content_type: "product", content_name: contentName }],
-    };
-    if (eventId) {
-      trackParams.event_id = eventId;
+    if (ttq) {
+      ttqIdentify(email);
+      ttq.track("Lead", {
+        contents: [{ content_id: contentId, content_type: "product", content_name: contentName }],
+        event_id: eid,
+      });
     }
-    ttq.track("Lead", trackParams);
   } catch {}
+
+  sendServerEvent({
+    event: "Lead",
+    eventId: eid,
+    email,
+    contentId,
+    contentType: "product",
+    contentName,
+    url: window.location.href,
+    ttclid: getTtclid(),
+  });
 }

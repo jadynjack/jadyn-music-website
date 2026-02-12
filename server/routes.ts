@@ -1,6 +1,5 @@
 import type { Express, RequestHandler } from "express";
 import { createServer, type Server } from "http";
-import crypto from "crypto";
 import { storage } from "./storage";
 import { insertVoteSchema, insertSubscriberSchema, updateStreamStatsSchema, updateSiteSettingsSchema, updateCharitiesSchema } from "@shared/schema";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
@@ -83,17 +82,6 @@ export async function registerRoutes(
         marketingOptIn: result.data.marketingOptIn || false,
       });
 
-      sendTikTokEvent({
-        event: "Lead",
-        eventId: req.body.eventId || crypto.randomUUID(),
-        email: result.data.email,
-        ip: getClientIp(req),
-        userAgent: req.headers["user-agent"] || "",
-        pageUrl: req.headers.referer || req.headers.origin || "",
-        contentId: "vote",
-        contentName: "Charity Vote",
-      }).catch(() => {});
-      
       const charities = await storage.getCharities();
       const voteCounts = await storage.getVoteCounts();
       const totalVotes = voteCounts.reduce((sum, c) => sum + c.count, 0);
@@ -124,18 +112,6 @@ export async function registerRoutes(
       }
 
       const subscriber = await storage.createSubscriber(result.data);
-
-      sendTikTokEvent({
-        event: "Lead",
-        eventId: req.body.eventId || crypto.randomUUID(),
-        email: result.data.email,
-        ip: getClientIp(req),
-        userAgent: req.headers["user-agent"] || "",
-        pageUrl: req.headers.referer || req.headers.origin || "",
-        contentId: "subscribe",
-        contentName: "Email Signup",
-      }).catch(() => {});
-
       res.json({ success: true, subscriber });
     } catch (error) {
       res.status(500).json({ error: "Failed to subscribe" });
@@ -189,6 +165,35 @@ export async function registerRoutes(
       res.json({ success: true, settings });
     } catch (error) {
       res.status(500).json({ error: "Failed to update site settings" });
+    }
+  });
+
+  app.post("/api/track", async (req, res) => {
+    try {
+      const { event, eventId, email, contentId, contentType, contentName, url, ttclid, value, currency } = req.body;
+      if (!event || !eventId) {
+        return res.status(400).json({ error: "Missing event or eventId" });
+      }
+
+      sendTikTokEvent({
+        event,
+        eventId,
+        email: email || undefined,
+        ip: getClientIp(req),
+        userAgent: req.headers["user-agent"] || "",
+        ttclid: ttclid || undefined,
+        pageUrl: url || req.headers.referer || req.headers.origin || "",
+        referrer: req.headers.referer || "",
+        contentId: contentId || undefined,
+        contentType: contentType || "product",
+        contentName: contentName || undefined,
+        value: value !== undefined ? value : undefined,
+        currency: currency || undefined,
+      }).catch(() => {});
+
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to track event" });
     }
   });
 
