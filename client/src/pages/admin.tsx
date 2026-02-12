@@ -31,8 +31,7 @@ interface SiteSettingsData {
   youtubeMusicLink: string;
   presaveEnabled: boolean;
   presaveTitle: string;
-  presaveSpotifyLink: string;
-  presaveAppleMusicLink: string;
+  presaveLink: string;
 }
 
 interface CharityData {
@@ -65,8 +64,7 @@ export default function Admin() {
   
   const [presaveEnabled, setPresaveEnabled] = React.useState(false);
   const [presaveTitle, setPresaveTitle] = React.useState("");
-  const [presaveSpotifyLink, setPresaveSpotifyLink] = React.useState("");
-  const [presaveAppleMusicLink, setPresaveAppleMusicLink] = React.useState("");
+  const [presaveLink, setPresaveLink] = React.useState("");
   const [presaveSaved, setPresaveSaved] = React.useState(false);
 
   const { data: stats } = useQuery<StreamStatsData>({
@@ -101,8 +99,7 @@ export default function Admin() {
       setYoutubeMusicLink(settings.youtubeMusicLink || "");
       setPresaveEnabled(settings.presaveEnabled || false);
       setPresaveTitle(settings.presaveTitle || "");
-      setPresaveSpotifyLink(settings.presaveSpotifyLink || "");
-      setPresaveAppleMusicLink(settings.presaveAppleMusicLink || "");
+      setPresaveLink(settings.presaveLink || "");
     }
   }, [settings]);
 
@@ -209,8 +206,7 @@ export default function Admin() {
       youtubeMusicLink,
       presaveEnabled,
       presaveTitle,
-      presaveSpotifyLink,
-      presaveAppleMusicLink,
+      presaveLink,
     });
   };
 
@@ -614,29 +610,13 @@ export default function Admin() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-white/60 uppercase tracking-wider flex items-center gap-2">
-                <SpotifyIcon className="w-3 h-3 text-[#1DB954]" />
-                Spotify Pre-Save URL
-              </label>
+              <label className="text-xs font-bold text-white/60 uppercase tracking-wider">Pre-Save Link</label>
               <Input 
-                value={presaveSpotifyLink}
-                onChange={(e) => setPresaveSpotifyLink(e.target.value)}
-                placeholder="https://open.spotify.com/..."
+                value={presaveLink}
+                onChange={(e) => setPresaveLink(e.target.value)}
+                placeholder="https://..."
                 className="bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl text-sm"
-                data-testid="input-presave-spotify-link"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-white/60 uppercase tracking-wider flex items-center gap-2">
-                <AppleMusicIcon className="w-3 h-3 text-[#FA243C]" />
-                Apple Music Pre-Save URL
-              </label>
-              <Input 
-                value={presaveAppleMusicLink}
-                onChange={(e) => setPresaveAppleMusicLink(e.target.value)}
-                placeholder="https://music.apple.com/..."
-                className="bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl text-sm"
-                data-testid="input-presave-apple-link"
+                data-testid="input-presave-link"
               />
             </div>
           </div>

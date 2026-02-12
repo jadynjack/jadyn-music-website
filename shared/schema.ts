@@ -43,8 +43,7 @@ export const siteSettings = pgTable("site_settings", {
   youtubeMusicLink: text("youtube_music_link").default(""),
   presaveEnabled: boolean("presave_enabled").notNull().default(false),
   presaveTitle: text("presave_title").default(""),
-  presaveSpotifyLink: text("presave_spotify_link").default(""),
-  presaveAppleMusicLink: text("presave_apple_music_link").default(""),
+  presaveLink: text("presave_link").default(""),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
@@ -62,8 +61,7 @@ export const updateSiteSettingsSchema = z.object({
   youtubeMusicLink: z.string().optional(),
   presaveEnabled: z.boolean().optional(),
   presaveTitle: z.string().optional(),
-  presaveSpotifyLink: z.string().optional(),
-  presaveAppleMusicLink: z.string().optional(),
+  presaveLink: z.string().optional(),
 });
 
 // Regex for safe charity IDs: alphanumeric, hyphens, underscores only
