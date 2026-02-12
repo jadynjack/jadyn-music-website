@@ -13,37 +13,50 @@ async function hashEmail(email: string): Promise<string> {
 }
 
 function getTTQ() {
-  return typeof window !== "undefined" ? window.ttq : null;
+  try {
+    return typeof window !== "undefined" ? window.ttq : null;
+  } catch {
+    return null;
+  }
 }
 
-export async function ttqIdentify(email: string) {
-  const ttq = getTTQ();
-  if (!ttq) return;
-  const hashedEmail = await hashEmail(email);
-  ttq.identify({ email: hashedEmail });
+export function ttqIdentify(email: string) {
+  try {
+    const ttq = getTTQ();
+    if (!ttq) return;
+    hashEmail(email).then((hashedEmail) => {
+      ttq.identify({ email: hashedEmail });
+    }).catch(() => {});
+  } catch {}
 }
 
 export function ttqViewContent(contentId: string, contentName: string) {
-  const ttq = getTTQ();
-  if (!ttq) return;
-  ttq.track("ViewContent", {
-    contents: [{ content_id: contentId, content_type: "product", content_name: contentName }],
-  });
+  try {
+    const ttq = getTTQ();
+    if (!ttq) return;
+    ttq.track("ViewContent", {
+      contents: [{ content_id: contentId, content_type: "product", content_name: contentName }],
+    });
+  } catch {}
 }
 
 export function ttqClickButton(contentId: string, contentName: string) {
-  const ttq = getTTQ();
-  if (!ttq) return;
-  ttq.track("ClickButton", {
-    contents: [{ content_id: contentId, content_type: "product", content_name: contentName }],
-  });
+  try {
+    const ttq = getTTQ();
+    if (!ttq) return;
+    ttq.track("ClickButton", {
+      contents: [{ content_id: contentId, content_type: "product", content_name: contentName }],
+    });
+  } catch {}
 }
 
-export async function ttqLead(email: string, contentId: string, contentName: string) {
-  const ttq = getTTQ();
-  if (!ttq) return;
-  await ttqIdentify(email);
-  ttq.track("Lead", {
-    contents: [{ content_id: contentId, content_type: "product", content_name: contentName }],
-  });
+export function ttqLead(email: string, contentId: string, contentName: string) {
+  try {
+    const ttq = getTTQ();
+    if (!ttq) return;
+    ttqIdentify(email);
+    ttq.track("Lead", {
+      contents: [{ content_id: contentId, content_type: "product", content_name: contentName }],
+    });
+  } catch {}
 }
