@@ -1,9 +1,16 @@
-import { ttqClickButton } from "./tiktokPixel";
-
 export function isInAppBrowser(): boolean {
   try {
     const ua = navigator.userAgent || "";
     return /TikTok|BytedanceWebview|Instagram|FBAN|FBAV|Line\//i.test(ua);
+  } catch {
+    return false;
+  }
+}
+
+export function isTikTok(): boolean {
+  try {
+    const ua = navigator.userAgent || "";
+    return /TikTok|BytedanceWebview/i.test(ua);
   } catch {
     return false;
   }
@@ -26,47 +33,24 @@ function detectPlatform(url: string): Platform | null {
   return null;
 }
 
-function getSpotifyDeepLink(url: string): string | null {
-  const match = url.match(
-    /(?:open\.)?spotify\.com\/(track|album|playlist|artist)\/([a-zA-Z0-9]+)/
-  );
+const APP_PACKAGES: Record<Platform, string> = {
+  "spotify": "com.spotify.music",
+  "apple-music": "com.apple.android.music",
+  "youtube-music": "com.google.android.apps.youtube.music",
+};
+
+function getSpotifyUriScheme(url: string): string {
+  const match = url.match(/(?:open\.)?spotify\.com\/(track|album|playlist|artist)\/([a-zA-Z0-9]+)/);
   if (match) {
     return `spotify://${match[1]}/${match[2]}`;
   }
-  return `spotify://`;
+  return "spotify://";
 }
 
-function getAppleMusicDeepLink(url: string): string | null {
-  try {
-    const parsed = new URL(url);
-    const host = parsed.host.replace("itunes.apple.com", "music.apple.com");
-    return `music://${host}${parsed.pathname}${parsed.search}`;
-  } catch {
-    return null;
-  }
-}
-
-function getYouTubeMusicDeepLink(url: string): string | null {
-  try {
-    const parsed = new URL(url);
-    if (isAndroid()) {
-      return `intent://${parsed.host}${parsed.pathname}${parsed.search}#Intent;scheme=https;package=com.google.android.apps.youtube.music;end`;
-    }
-    return `vnd.youtube.music://${parsed.host}${parsed.pathname}${parsed.search}`;
-  } catch {
-    return null;
-  }
-}
-
-function getDeepLink(url: string, platform: Platform): string | null {
-  switch (platform) {
-    case "spotify":
-      return getSpotifyDeepLink(url);
-    case "apple-music":
-      return getAppleMusicDeepLink(url);
-    case "youtube-music":
-      return getYouTubeMusicDeepLink(url);
-  }
+function getAndroidIntent(url: string, platform: Platform): string {
+  const cleaned = url.replace(/^https?:\/\//, "");
+  const pkg = APP_PACKAGES[platform];
+  return `intent://${cleaned}#Intent;scheme=https;package=${pkg};end`;
 }
 
 function sendTrackingBeacon(trackingId: string, trackingLabel: string) {
@@ -103,11 +87,7 @@ function sendTrackingBeacon(trackingId: string, trackingLabel: string) {
   } catch {}
 }
 
-export function openSmartLink(
-  url: string,
-  trackingLabel: string,
-  trackingId: string
-) {
+function firePixelAndGA(trackingId: string, trackingLabel: string) {
   try {
     const ttq = (window as any).ttq;
     if (ttq) {
@@ -118,8 +98,6 @@ export function openSmartLink(
     }
   } catch {}
 
-  sendTrackingBeacon(trackingId, trackingLabel);
-
   if (typeof window.gtag === "function") {
     window.gtag("event", "click", {
       event_category: "streaming_link",
@@ -127,35 +105,70 @@ export function openSmartLink(
       transport_type: "beacon",
     });
   }
+}
 
-  setTimeout(() => {
-    if (!url) return;
+export function openSmartLink(
+  url: string,
+  trackingLabel: string,
+  trackingId: string
+) {
+  if (!url) return;
 
-    const platform = detectPlatform(url);
+  firePixelAndGA(trackingId, trackingLabel);
+  sendTrackingBeacon(trackingId, trackingLabel);
 
-    if (!isInAppBrowser() || !platform) {
-      window.open(url, "_blank", "noopener,noreferrer");
-      return;
-    }
+  const platform = detectPlatform(url);
 
-    const deepLink = getDeepLink(url, platform);
+  if (!isInAppBrowser() || !platform) {
+    window.open(url, "_blank", "noopener,noreferrer");
+    return;
+  }
 
-    if (deepLink) {
-      window.location.href = deepLink;
+  if (isAndroid()) {
+    const intentUrl = getAndroidIntent(url, platform);
+    window.location.href = intentUrl;
+    setTimeout(() => {
+      window.location.href = url;
+    }, 2000);
+    return;
+  }
 
-      setTimeout(() => {
-        if (isAndroid()) {
-          window.location.href = `intent://${url.replace(/^https?:\/\//, "")}#Intent;scheme=https;package=com.android.chrome;end`;
-        } else {
+  if (isIOS()) {
+    if (isTikTok()) {
+      const redirectUrl = `/api/redirect?url=${encodeURIComponent(url)}`;
+      window.location.href = redirectUrl;
+    } else {
+      if (platform === "spotify") {
+        const scheme = getSpotifyUriScheme(url);
+        window.location.href = scheme;
+        setTimeout(() => {
+          window.location.href = url;
+        }, 1500);
+      } else if (platform === "apple-music") {
+        try {
+          const parsed = new URL(url);
+          const host = parsed.host.replace("itunes.apple.com", "music.apple.com");
+          window.location.href = `music://${host}${parsed.pathname}${parsed.search}`;
+          setTimeout(() => {
+            window.location.href = url;
+          }, 1500);
+        } catch {
           window.location.href = url;
         }
-      }, 1500);
-    } else {
-      if (isAndroid()) {
-        window.location.href = `intent://${url.replace(/^https?:\/\//, "")}#Intent;scheme=https;package=com.android.chrome;end`;
-      } else {
-        window.location.href = url;
+      } else if (platform === "youtube-music") {
+        try {
+          const parsed = new URL(url);
+          window.location.href = `vnd.youtube.music://${parsed.host}${parsed.pathname}${parsed.search}`;
+          setTimeout(() => {
+            window.location.href = url;
+          }, 1500);
+        } catch {
+          window.location.href = url;
+        }
       }
     }
-  }, 100);
+    return;
+  }
+
+  window.location.href = url;
 }

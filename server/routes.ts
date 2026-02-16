@@ -197,6 +197,38 @@ export async function registerRoutes(
     }
   });
 
+  const ALLOWED_REDIRECT_HOSTS = [
+    "open.spotify.com",
+    "spotify.link",
+    "music.apple.com",
+    "itunes.apple.com",
+    "music.youtube.com",
+    "youtu.be",
+    "www.youtube.com",
+  ];
+
+  app.get("/api/redirect", async (req, res) => {
+    try {
+      const { url } = req.query as { url?: string };
+      if (!url || typeof url !== "string") {
+        return res.status(400).json({ error: "Missing url parameter" });
+      }
+
+      try {
+        const parsed = new URL(url);
+        if (!ALLOWED_REDIRECT_HOSTS.includes(parsed.hostname)) {
+          return res.status(400).json({ error: "Redirect target not allowed" });
+        }
+      } catch {
+        return res.status(400).json({ error: "Invalid URL" });
+      }
+
+      res.redirect(302, url);
+    } catch {
+      res.status(400).json({ error: "Redirect failed" });
+    }
+  });
+
   app.post("/api/charities/update", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const result = updateCharitiesSchema.safeParse(req.body);
