@@ -225,17 +225,8 @@ export async function registerRoutes(
     return null;
   }
 
-  function getAndroidIntentUrl(url: string): string | null {
-    try {
-      const parsed = new URL(url);
-      let pkg = "";
-      if (parsed.hostname === "open.spotify.com") pkg = "com.spotify.music";
-      else if (parsed.hostname === "music.apple.com" || parsed.hostname === "itunes.apple.com") pkg = "com.apple.android.music";
-      else if (parsed.hostname === "music.youtube.com") pkg = "com.google.android.apps.youtube.music";
-      if (!pkg) return null;
-      return `intent://${parsed.hostname}${parsed.pathname}${parsed.search}#Intent;scheme=https;package=${pkg};S.browser_fallback_url=${encodeURIComponent(url)};end`;
-    } catch {}
-    return null;
+  function getChromeIntentUrl(url: string): string {
+    return `intent://${url.replace(/^https?:\/\//, "")}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(url)};end`;
   }
 
   app.get("/api/redirect", async (req, res) => {
@@ -260,11 +251,11 @@ export async function registerRoutes(
       const isIOS = /iPad|iPhone|iPod/i.test(ua);
 
       const deepLink = getDeepLinkScheme(url);
-      const intentUrl = isAndroid ? getAndroidIntentUrl(url) : null;
+      const chromeIntent = isAndroid ? getChromeIntentUrl(url) : null;
 
       const escapedUrl = url.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       const escapedDeepLink = deepLink ? deepLink.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "";
-      const escapedIntent = intentUrl ? intentUrl.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "";
+      const escapedChromeIntent = chromeIntent ? chromeIntent.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "";
 
       const platformName = parsed.hostname.includes("spotify") ? "Spotify"
         : parsed.hostname.includes("apple") ? "Apple Music"
@@ -294,28 +285,35 @@ p{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:24px;line-height:1.5}
 <div class="spinner"></div>
 <h1>Opening ${platformName}...</h1>
 <p>If the app doesn't open automatically, tap the button below.</p>
-<a class="btn" id="fallback" href="${escapedUrl}">Open in ${platformName}</a>
+<a class="btn" id="fallback" href="${escapedUrl}" target="_blank" rel="noopener noreferrer">Open in ${platformName}</a>
 </div>
 <script>
 (function(){
   var webUrl = "${escapedUrl}";
   var deepLink = "${escapedDeepLink}";
-  var intentUrl = "${escapedIntent}";
+  var chromeIntent = "${escapedChromeIntent}";
   var isAndroid = ${isAndroid};
   var isIOS = ${isIOS};
   var opened = false;
 
-  function goWeb() {
-    if (!opened) {
-      opened = true;
+  function openExternal() {
+    if (opened) return;
+    opened = true;
+    try {
+      var w = window.open(webUrl, '_blank');
+      if (!w) window.location.href = webUrl;
+    } catch(e) {
       window.location.href = webUrl;
     }
   }
 
-  if (isAndroid && intentUrl) {
-    window.location.href = intentUrl;
-    setTimeout(goWeb, 2500);
-  } else if (deepLink) {
+  if (isAndroid) {
+    if (chromeIntent) {
+      window.location.href = chromeIntent;
+    } else {
+      openExternal();
+    }
+  } else if (isIOS && deepLink) {
     var iframe = document.createElement('iframe');
     iframe.style.display = 'none';
     iframe.src = deepLink;
@@ -325,9 +323,9 @@ p{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:24px;line-height:1.5}
       window.location.href = deepLink;
     }, 100);
 
-    setTimeout(goWeb, 2000);
+    setTimeout(openExternal, 2000);
   } else {
-    goWeb();
+    openExternal();
   }
 })();
 </script>
