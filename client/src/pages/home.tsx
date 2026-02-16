@@ -92,7 +92,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-0 sm:p-4 bg-[#050608] relative overflow-hidden">
+    <main className="min-h-screen flex items-center justify-center p-0 sm:p-4 bg-[#050608] relative overflow-hidden" role="main">
       {/* Background Ambient Effects */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none" />
@@ -117,6 +117,7 @@ export default function Home() {
                 onClick={() => setShowInfo(false)}
                 className="absolute top-6 right-6 p-2 text-white/40 hover:text-white transition-colors"
                 data-testid="button-close-info"
+                aria-label="Close info panel"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -155,8 +156,11 @@ export default function Home() {
           <div className="absolute inset-0">
             <img 
               src={portraitImage} 
-              alt="Vanya - Midnight" 
+              alt="JADYN – indie pop artist from Sydney" 
+              width={380}
+              height={480}
               className="w-full h-full object-cover opacity-90 object-[20%_center]"
+              loading="eager"
             />
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#12141c] via-[#12141c]/20 to-transparent" />
@@ -167,7 +171,9 @@ export default function Home() {
           <div className="absolute top-8 left-0 right-0 flex justify-center z-10">
             <img 
               src={logoImage} 
-              alt="Logo" 
+              alt="JADYN" 
+              width={200}
+              height={128}
               className="h-32 w-auto object-contain drop-shadow-lg"
             />
           </div>
@@ -183,14 +189,14 @@ export default function Home() {
               New Release
             </motion.span>
             
-            <motion.h2 
+            <motion.h1 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
               className="font-display text-5xl font-black italic tracking-tighter text-white mb-2 drop-shadow-xl uppercase"
             >
               {siteSettings?.songTitle || "RAINBOW"}
-            </motion.h2>
+            </motion.h1>
             
             <motion.p 
               initial={{ opacity: 0 }}
@@ -207,7 +213,7 @@ export default function Home() {
         <div className="px-5 pb-8 space-y-5">
           
           {/* Streaming Links */}
-          <div className="space-y-3">
+          <nav aria-label="Streaming platforms" className="space-y-3">
             <LinkItem 
               delay={0.5}
               icon={<SpotifyIcon className="w-5 h-5 text-[#1DB954]" />}
@@ -226,10 +232,10 @@ export default function Home() {
               label="Listen on YouTube Music"
               href={siteSettings?.youtubeMusicLink}
             />
-          </div>
+          </nav>
 
           {/* Charity Goal */}
-          <motion.div 
+          <motion.section aria-label="The Glimmer Fund – charity donation tracker" 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
@@ -244,6 +250,7 @@ export default function Home() {
                 onClick={() => setShowInfo(true)}
                 className="p-1 text-white/40 hover:text-primary transition-colors active:scale-90"
                 data-testid="button-info-campaign"
+                aria-label="Learn more about The Glimmer Fund"
               >
                 <Info className="w-4 h-4" />
               </button>
@@ -287,7 +294,7 @@ export default function Home() {
                 Vote For Charity
               </Button>
             </div>
-          </motion.div>
+          </motion.section>
 
           {/* Email Sign Up */}
           <motion.div 
@@ -322,6 +329,7 @@ export default function Home() {
                     size="icon" 
                     className="h-10 w-10 shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-[0_0_15px_rgba(45,212,191,0.3)] transition-all active:scale-95"
                     data-testid="button-subscribe"
+                    aria-label="Subscribe to email updates"
                   >
                     <Send className="w-4 h-4" />
                   </Button>
@@ -349,7 +357,7 @@ export default function Home() {
         
         <Footer />
       </motion.div>
-    </div>
+    </main>
   );
 }
 

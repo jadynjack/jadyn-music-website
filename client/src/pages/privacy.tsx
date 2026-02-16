@@ -9,7 +9,7 @@ export default function Privacy() {
   const [, setLocation] = useLocation();
 
   return (
-    <div className="min-h-screen bg-[#050608] relative overflow-hidden">
+    <main className="min-h-screen bg-[#050608] relative overflow-hidden" role="main">
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none" />
       
@@ -24,7 +24,7 @@ export default function Privacy() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          <img src={logoImage} alt="Logo" className="h-8 w-auto" />
+          <img src={logoImage} alt="JADYN" width={80} height={32} className="h-8 w-auto" />
         </div>
 
         <motion.div 
@@ -99,6 +99,6 @@ export default function Privacy() {
         
         <Footer />
       </div>
-    </div>
+    </main>
   );
 }

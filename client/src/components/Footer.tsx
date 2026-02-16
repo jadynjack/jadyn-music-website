@@ -11,6 +11,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
             data-testid="link-instagram"
+            aria-label="Follow JADYN on Instagram"
           >
             <InstagramIcon className="w-5 h-5 text-white/60 hover:text-white" />
           </a>
@@ -20,6 +21,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
             data-testid="link-tiktok"
+            aria-label="Follow JADYN on TikTok"
           >
             <TikTokIcon className="w-5 h-5 text-white/60 hover:text-white" />
           </a>

@@ -101,7 +101,7 @@ export default function Vote() {
   const displayCharities = hasVoted ? resultsCharities : charities;
 
   return (
-    <div className="min-h-screen flex items-start sm:items-center justify-center p-0 sm:p-4 bg-[#050608] relative overflow-hidden">
+    <main className="min-h-screen flex items-start sm:items-center justify-center p-0 sm:p-4 bg-[#050608] relative overflow-hidden" role="main">
       {/* Background Ambient Effects */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none" />
@@ -121,7 +121,10 @@ export default function Vote() {
                   <img 
                     src={portraitImage} 
                     className="w-full h-full object-cover opacity-80 object-[20%_center]"
-                    alt="Vanya"
+                    alt="JADYN – vote for a charity"
+                    width={380}
+                    height={400}
+                    loading="eager"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#12141c] via-[#12141c]/40 to-transparent" />
                 </div>
@@ -129,13 +132,15 @@ export default function Vote() {
                 <div className="absolute top-8 left-0 right-0 flex justify-center z-10">
                   <img 
                     src={logoImage} 
-                    alt="Logo" 
+                    alt="JADYN" 
+                    width={200}
+                    height={144}
                     className="h-36 w-auto object-contain drop-shadow-lg"
                   />
                 </div>
 
                 <div className="absolute bottom-0 left-0 right-0 p-8 pt-20 flex flex-col items-center text-center z-10">
-                  <h2 className="font-display text-4xl font-black italic tracking-tighter text-white mb-2 uppercase">Vote For Charity</h2>
+                  <h1 className="font-display text-4xl font-black italic tracking-tighter text-white mb-2 uppercase">Vote For Charity</h1>
                   <p className="text-white/60 font-medium tracking-wide max-w-[240px] text-[14px]">Every 100 streams of my music triggers a $5 donation. Pick where the money goes:</p>
                 </div>
               </div>
@@ -343,7 +348,7 @@ export default function Vote() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </main>
   );
 }
 
