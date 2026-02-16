@@ -11,7 +11,8 @@ import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jp
 import appleMusicLogo from "@assets/Apple_Music_icon.svg_1768739002544.png";
 import logoImage from "@assets/logo-white_1768735494982.png";
 import Footer from "@/components/Footer";
-import { ttqViewContent, ttqClickButton, ttqLead, generateEventId } from "@/lib/tiktokPixel";
+import { ttqViewContent, ttqLead, generateEventId } from "@/lib/tiktokPixel";
+import { openSmartLink } from "@/lib/smartLinks";
 
 interface CharityData {
   id: string;
@@ -353,20 +354,21 @@ export default function Home() {
 }
 
 function LinkItem({ icon, label, delay, href }: { icon: React.ReactNode, label: string, delay: number, href?: string }) {
-  const handleClick = () => {
-    ttqClickButton(label.toLowerCase().replace(/\s+/g, "-"), label);
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!href) return;
+    const trackingId = label.toLowerCase().replace(/\s+/g, "-");
+    openSmartLink(href, label, trackingId);
   };
 
   return (
-    <motion.a
-      href={href || "#"}
-      target={href ? "_blank" : undefined}
-      rel={href ? "noopener noreferrer" : undefined}
+    <motion.div
       onClick={handleClick}
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay }}
       className="flex items-center justify-between p-4 bg-[#1a1d26] hover:bg-[#20242e] border border-white/5 rounded-2xl transition-all group cursor-pointer active:scale-[0.98] hover:border-white/10"
+      data-testid={`link-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
       <div className="flex items-center gap-4">
         <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center group-hover:bg-white/5 transition-colors border border-white/5">
@@ -375,7 +377,7 @@ function LinkItem({ icon, label, delay, href }: { icon: React.ReactNode, label: 
         <span className="text-sm font-bold text-white/90 group-hover:text-white transition-colors">{label}</span>
       </div>
       <ExternalLink className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
-    </motion.a>
+    </motion.div>
   );
 }
 

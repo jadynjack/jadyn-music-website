@@ -55,14 +55,27 @@ Preferred communication style: Simple, everyday language.
 - **PostgreSQL**: Required via `DATABASE_URL` environment variable
 - **Drizzle Kit**: Database migrations stored in `./migrations`
 
+### Smart Deep Links
+- **In-App Browser Detection**: Detects TikTok, Instagram, Line in-app browsers via user agent
+- **Deep Link Strategy**: `client/src/lib/smartLinks.ts`
+  - Spotify: `spotify://track/ID` URI scheme
+  - Apple Music: `music://` URI scheme (handles both music.apple.com and itunes.apple.com)
+  - YouTube Music: Android `intent://` with package, iOS `vnd.youtube.music://`
+  - Falls back to opening in Chrome (Android intent) or system browser (iOS)
+  - Normal browsers: standard `window.open` with `_blank` target
+- **Tracking Integrity**: Uses `navigator.sendBeacon` for reliable event delivery before page navigation
+  - Fires TikTok pixel, server-side Events API, and Google Analytics before redirect
+  - All server-side tracking uses sendBeacon/keepalive fetch to survive page unload
+
 ### Analytics & Tracking
 - **Google Analytics**: Measurement ID `G-V5GRX79HVR` (client-side via gtag)
 - **TikTok Pixel**: Pixel ID `D66PFEBC77U67PE0F0TG` (client-side via ttq)
 - **TikTok Events API**: Server-side event tracking via `server/lib/tiktokEvents.ts`
-  - Sends Lead events for subscribes and votes
+  - Sends ViewContent, ClickButton, Lead events server-side
   - Uses SHA-256 hashed emails, IP, user agent for matching
   - Event deduplication via shared `eventId` between pixel and server
   - Client generates `eventId` via `crypto.randomUUID()`, passes to both pixel and API
+  - All client-to-server tracking uses `navigator.sendBeacon` for reliability
 
 ### Environment Variables Required
 - `DATABASE_URL`: PostgreSQL connection string
