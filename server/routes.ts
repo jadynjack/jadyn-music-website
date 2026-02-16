@@ -207,6 +207,37 @@ export async function registerRoutes(
     "www.youtube.com",
   ];
 
+  function getDeepLinkScheme(url: string): string | null {
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname === "open.spotify.com") {
+        const match = url.match(/open\.spotify\.com\/(track|album|playlist|artist)\/([a-zA-Z0-9]+)/);
+        if (match) return `spotify://${match[1]}/${match[2]}`;
+        return "spotify://";
+      }
+      if (parsed.hostname === "music.apple.com" || parsed.hostname === "itunes.apple.com") {
+        return `music://music.apple.com${parsed.pathname}${parsed.search}`;
+      }
+      if (parsed.hostname === "music.youtube.com") {
+        return `vnd.youtube.music://${parsed.hostname}${parsed.pathname}${parsed.search}`;
+      }
+    } catch {}
+    return null;
+  }
+
+  function getAndroidIntentUrl(url: string): string | null {
+    try {
+      const parsed = new URL(url);
+      let pkg = "";
+      if (parsed.hostname === "open.spotify.com") pkg = "com.spotify.music";
+      else if (parsed.hostname === "music.apple.com" || parsed.hostname === "itunes.apple.com") pkg = "com.apple.android.music";
+      else if (parsed.hostname === "music.youtube.com") pkg = "com.google.android.apps.youtube.music";
+      if (!pkg) return null;
+      return `intent://${parsed.hostname}${parsed.pathname}${parsed.search}#Intent;scheme=https;package=${pkg};S.browser_fallback_url=${encodeURIComponent(url)};end`;
+    } catch {}
+    return null;
+  }
+
   app.get("/api/redirect", async (req, res) => {
     try {
       const { url } = req.query as { url?: string };
@@ -214,8 +245,9 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Missing url parameter" });
       }
 
+      let parsed: URL;
       try {
-        const parsed = new URL(url);
+        parsed = new URL(url);
         if (!ALLOWED_REDIRECT_HOSTS.includes(parsed.hostname)) {
           return res.status(400).json({ error: "Redirect target not allowed" });
         }
@@ -223,9 +255,90 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Invalid URL" });
       }
 
-      res.redirect(302, url);
+      const ua = req.headers["user-agent"] || "";
+      const isAndroid = /Android/i.test(ua);
+      const isIOS = /iPad|iPhone|iPod/i.test(ua);
+
+      const deepLink = getDeepLinkScheme(url);
+      const intentUrl = isAndroid ? getAndroidIntentUrl(url) : null;
+
+      const escapedUrl = url.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const escapedDeepLink = deepLink ? deepLink.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "";
+      const escapedIntent = intentUrl ? intentUrl.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "";
+
+      const platformName = parsed.hostname.includes("spotify") ? "Spotify"
+        : parsed.hostname.includes("apple") ? "Apple Music"
+        : parsed.hostname.includes("youtube") ? "YouTube Music"
+        : "the app";
+
+      const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Opening ${platformName}...</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#050608;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:20px}
+.container{max-width:320px}
+.spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.1);border-top-color:#1DB954;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 24px}
+@keyframes spin{to{transform:rotate(360deg)}}
+h1{font-size:18px;font-weight:600;margin-bottom:8px;opacity:0.9}
+p{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:24px;line-height:1.5}
+.btn{display:inline-block;padding:14px 32px;background:rgba(255,255,255,0.1);color:#fff;text-decoration:none;border-radius:12px;font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,0.1);transition:background .2s}
+.btn:active{background:rgba(255,255,255,0.2)}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="spinner"></div>
+<h1>Opening ${platformName}...</h1>
+<p>If the app doesn't open automatically, tap the button below.</p>
+<a class="btn" id="fallback" href="${escapedUrl}">Open in ${platformName}</a>
+</div>
+<script>
+(function(){
+  var webUrl = "${escapedUrl}";
+  var deepLink = "${escapedDeepLink}";
+  var intentUrl = "${escapedIntent}";
+  var isAndroid = ${isAndroid};
+  var isIOS = ${isIOS};
+  var opened = false;
+
+  function goWeb() {
+    if (!opened) {
+      opened = true;
+      window.location.href = webUrl;
+    }
+  }
+
+  if (isAndroid && intentUrl) {
+    window.location.href = intentUrl;
+    setTimeout(goWeb, 2500);
+  } else if (deepLink) {
+    var iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = deepLink;
+    document.body.appendChild(iframe);
+
+    setTimeout(function() {
+      window.location.href = deepLink;
+    }, 100);
+
+    setTimeout(goWeb, 2000);
+  } else {
+    goWeb();
+  }
+})();
+</script>
+</body>
+</html>`;
+
+      res.setHeader("Content-Type", "text/html");
+      res.send(html);
     } catch {
-      res.status(400).json({ error: "Redirect failed" });
+      const fallbackUrl = (req.query.url as string) || "/";
+      res.redirect(302, fallbackUrl);
     }
   });
 
