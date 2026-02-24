@@ -63,6 +63,8 @@ app.use(
   }),
 );
 
+app.use(express.text({ type: "text/plain" }));
+
 app.use(express.urlencoded({ extended: false }));
 
 export function log(message: string, source = "express") {

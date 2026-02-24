@@ -170,7 +170,15 @@ export async function registerRoutes(
 
   app.post("/api/track", async (req, res) => {
     try {
-      const { event, eventId, email, contentId, contentType, contentName, url, ttclid, value, currency } = req.body;
+      let body = req.body;
+      if (typeof body === "string") {
+        try {
+          body = JSON.parse(body);
+        } catch {
+          return res.status(400).json({ error: "Invalid JSON body" });
+        }
+      }
+      const { event, eventId, email, contentId, contentType, contentName, url, ttclid, value, currency } = body || {};
       if (!event || !eventId) {
         return res.status(400).json({ error: "Missing event or eventId" });
       }
