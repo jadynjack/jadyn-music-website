@@ -77,7 +77,7 @@ export default function Home() {
 
   const raised = streamStats?.dollarsRaised || 0;
   const totalStreams = streamStats?.totalStreams || 0;
-  const progressPercent = Math.min((totalStreams / 100000) * 100, 100);
+  const progressPercent = Math.min((totalStreams / 10000) * 100, 100);
 
   React.useEffect(() => {
     ttqViewContent("home", "JADYN Home Page");
