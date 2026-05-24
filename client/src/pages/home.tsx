@@ -16,9 +16,9 @@ import { openSmartLink } from "@/lib/smartLinks";
 // ─── SITE CONFIG ──────────────────────────────────────────────────────────────
 const SONG_TITLE = "YOU MAKE ME FEEL";
 const SONG_SUBTITLE = "New single out now on all platforms";
-const SPOTIFY_LINK = "";       // e.g. "https://open.spotify.com/track/..."
-const APPLE_MUSIC_LINK = "";   // e.g. "https://music.apple.com/..."
-const YOUTUBE_MUSIC_LINK = ""; // e.g. "https://music.youtube.com/..."
+const SPOTIFY_LINK = "https://open.spotify.com/album/5rCz29MTo6iwhDVPHwpQgi?si=xFuLkJgYSGe6KmwlmyXG6Q";
+const APPLE_MUSIC_LINK = "https://music.apple.com/au/album/you-make-me-feel-single/1868491302";
+const YOUTUBE_MUSIC_LINK = "https://music.youtube.com/playlist?list=OLAK5uy_n60c8SbLkz7EuNDGONVws5musGETuwrHc";
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function Home() {
