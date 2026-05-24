@@ -1,6 +1,6 @@
 import * as React from "react";
 import { motion } from "framer-motion";
-import { Save, ArrowLeft, DollarSign, Music, Link, Users, Plus, Trash2, LogOut, Disc } from "lucide-react";
+import { Save, ArrowLeft, DollarSign, Music, Link, LogOut, Disc } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -34,13 +34,6 @@ interface SiteSettingsData {
   presaveLink: string;
 }
 
-interface CharityData {
-  id: string;
-  name: string;
-  voteCount: number;
-  percentage: number;
-}
-
 export default function Admin() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -59,9 +52,6 @@ export default function Admin() {
   const [youtubeMusicLink, setYoutubeMusicLink] = React.useState("");
   const [settingsSaved, setSettingsSaved] = React.useState(false);
   
-  const [editCharities, setEditCharities] = React.useState<{id: string; name: string}[]>([]);
-  const [charitiesSaved, setCharitiesSaved] = React.useState(false);
-  
   const [presaveEnabled, setPresaveEnabled] = React.useState(false);
   const [presaveTitle, setPresaveTitle] = React.useState("");
   const [presaveLink, setPresaveLink] = React.useState("");
@@ -74,11 +64,6 @@ export default function Admin() {
 
   const { data: settings } = useQuery<SiteSettingsData>({
     queryKey: ["/api/site-settings"],
-    enabled: isAuthenticated,
-  });
-
-  const { data: charities } = useQuery<CharityData[]>({
-    queryKey: ["/api/charities"],
     enabled: isAuthenticated,
   });
 
@@ -102,12 +87,6 @@ export default function Admin() {
       setPresaveLink(settings.presaveLink || "");
     }
   }, [settings]);
-
-  React.useEffect(() => {
-    if (charities) {
-      setEditCharities(charities.map(c => ({ id: c.id, name: c.name })));
-    }
-  }, [charities]);
 
   const updateStreamsMutation = useMutation({
     mutationFn: async (data: { spotifyStreams: number; appleMusicStreams: number; youtubeMusicStreams: number }) => {
@@ -133,22 +112,6 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ["/api/site-settings"] });
       setSettingsSaved(true);
       setTimeout(() => setSettingsSaved(false), 2000);
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Please log in to save changes", variant: "destructive" });
-    },
-  });
-
-  const updateCharitiesMutation = useMutation({
-    mutationFn: async (data: { charities: { id: string; name: string }[] }) => {
-      const res = await apiRequest("POST", "/api/charities/update", data);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/charities"] });
-      setCharitiesSaved(true);
-      setTimeout(() => setCharitiesSaved(false), 2000);
-      toast({ title: "Charities Updated", description: "All votes have been reset" });
     },
     onError: () => {
       toast({ title: "Error", description: "Please log in to save changes", variant: "destructive" });
@@ -188,15 +151,6 @@ export default function Admin() {
     });
   };
 
-  const handleSaveCharities = () => {
-    const validCharities = editCharities.filter(c => c.id && c.name);
-    if (validCharities.length === 0) {
-      toast({ title: "Error", description: "Add at least one charity", variant: "destructive" });
-      return;
-    }
-    updateCharitiesMutation.mutate({ charities: validCharities });
-  };
-
   const handleSavePresave = () => {
     updatePresaveMutation.mutate({
       songTitle: songTitle || "RAINBOW",
@@ -208,20 +162,6 @@ export default function Admin() {
       presaveTitle,
       presaveLink,
     });
-  };
-
-  const addCharity = () => {
-    setEditCharities([...editCharities, { id: "", name: "" }]);
-  };
-
-  const removeCharity = (index: number) => {
-    setEditCharities(editCharities.filter((_, i) => i !== index));
-  };
-
-  const updateCharity = (index: number, field: "id" | "name", value: string) => {
-    const updated = [...editCharities];
-    updated[index] = { ...updated[index], [field]: field === "id" ? value.toLowerCase().replace(/\s+/g, "-") : value };
-    setEditCharities(updated);
   };
 
   const totalStreams = (parseInt(spotify) || 0) + (parseInt(appleMusic) || 0) + (parseInt(youtubeMusic) || 0);
@@ -501,72 +441,6 @@ export default function Admin() {
             data-testid="button-save-settings"
           >
             {settingsSaved ? "Saved!" : updateSettingsMutation.isPending ? "Saving..." : <><Save className="w-4 h-4 mr-2" />Save Settings</>}
-          </Button>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-[#12141c] rounded-2xl border border-white/5 p-6"
-        >
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center">
-              <Users className="w-5 h-5 text-pink-400" />
-            </div>
-            <div>
-              <h2 className="text-white font-bold">Charity Voting</h2>
-              <p className="text-white/40 text-xs">Updating charities will reset all votes</p>
-            </div>
-          </div>
-
-          <div className="space-y-3 mb-5">
-            {editCharities.map((charity, index) => (
-              <div key={index} className="flex gap-2">
-                <Input 
-                  value={charity.name}
-                  onChange={(e) => {
-                    updateCharity(index, "name", e.target.value);
-                    if (!charity.id || charity.id === editCharities[index].name.toLowerCase().replace(/\s+/g, "-")) {
-                      updateCharity(index, "id", e.target.value);
-                    }
-                  }}
-                  placeholder="Charity Name"
-                  className="flex-1 bg-black/20 border-white/10 h-11 text-white placeholder:text-white/20 rounded-xl"
-                  data-testid={`input-charity-name-${index}`}
-                />
-                <Button 
-                  onClick={() => removeCharity(index)}
-                  variant="ghost" 
-                  size="icon"
-                  className="h-11 w-11 text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                  disabled={editCharities.length <= 1}
-                  data-testid={`button-remove-charity-${index}`}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-
-          <Button 
-            onClick={addCharity}
-            variant="outline"
-            className="w-full h-11 mb-4 border-white/10 text-white/60 hover:text-white hover:bg-white/5 rounded-xl"
-            disabled={editCharities.length >= 5}
-            data-testid="button-add-charity"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Charity
-          </Button>
-
-          <Button 
-            onClick={handleSaveCharities}
-            disabled={updateCharitiesMutation.isPending}
-            className="w-full h-11 bg-pink-500 hover:bg-pink-500/90 text-white font-bold uppercase tracking-widest rounded-xl"
-            data-testid="button-save-charities"
-          >
-            {charitiesSaved ? "Saved!" : updateCharitiesMutation.isPending ? "Saving..." : <><Save className="w-4 h-4 mr-2" />Save Charities</>}
           </Button>
         </motion.div>
 

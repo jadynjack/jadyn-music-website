@@ -1,7 +1,7 @@
 import type { Express, RequestHandler } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertVoteSchema, insertSubscriberSchema, updateStreamStatsSchema, updateSiteSettingsSchema, updateCharitiesSchema } from "@shared/schema";
+import { insertSubscriberSchema, updateStreamStatsSchema, updateSiteSettingsSchema } from "@shared/schema";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { sendTikTokEvent, getClientIp } from "./lib/tiktokEvents";
 
@@ -34,75 +34,8 @@ export async function registerRoutes(
   await setupAuth(app);
   registerAuthRoutes(app);
   
-  await storage.initializeCharities();
   await storage.initializeStreamStats();
   await storage.initializeSiteSettings();
-
-  app.get("/api/charities", async (req, res) => {
-    try {
-      const charities = await storage.getCharities();
-      const voteCounts = await storage.getVoteCounts();
-      const totalVotes = voteCounts.reduce((sum, c) => sum + c.count, 0);
-      
-      const charitiesWithPercentage = charities.map(charity => {
-        const voteData = voteCounts.find(v => v.charityId === charity.id);
-        const count = voteData?.count || 0;
-        const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
-        return {
-          id: charity.id,
-          name: charity.name,
-          voteCount: count,
-          percentage
-        };
-      });
-      
-      res.json(charitiesWithPercentage);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch charities" });
-    }
-  });
-
-  app.post("/api/votes", async (req, res) => {
-    try {
-      const result = insertVoteSchema.safeParse(req.body);
-      if (!result.success) {
-        return res.status(400).json({ error: "Invalid vote data" });
-      }
-
-      const hasVoted = await storage.hasVoted(result.data.email);
-      if (hasVoted) {
-        return res.status(400).json({ error: "Email has already voted" });
-      }
-
-      const vote = await storage.createVote(result.data);
-      
-      // Also add voter to subscribers to preserve email if votes are reset
-      await storage.createSubscriber({
-        email: result.data.email,
-        marketingOptIn: result.data.marketingOptIn || false,
-      });
-
-      const charities = await storage.getCharities();
-      const voteCounts = await storage.getVoteCounts();
-      const totalVotes = voteCounts.reduce((sum, c) => sum + c.count, 0);
-      
-      const charitiesWithPercentage = charities.map(charity => {
-        const voteData = voteCounts.find(v => v.charityId === charity.id);
-        const count = voteData?.count || 0;
-        const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
-        return {
-          id: charity.id,
-          name: charity.name,
-          voteCount: count,
-          percentage
-        };
-      });
-
-      res.json({ success: true, charities: charitiesWithPercentage });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to record vote" });
-    }
-  });
 
   app.post("/api/subscribers", async (req, res) => {
     try {
@@ -345,20 +278,6 @@ p{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:24px;line-height:1.5}
     } catch {
       const fallbackUrl = (req.query.url as string) || "/";
       res.redirect(302, fallbackUrl);
-    }
-  });
-
-  app.post("/api/charities/update", isAuthenticated, isAdmin, async (req, res) => {
-    try {
-      const result = updateCharitiesSchema.safeParse(req.body);
-      if (!result.success) {
-        return res.status(400).json({ error: "Invalid charities data" });
-      }
-
-      const charities = await storage.updateCharities(result.data.charities);
-      res.json({ success: true, charities });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update charities" });
     }
   });
 
