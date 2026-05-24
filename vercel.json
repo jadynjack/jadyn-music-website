@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npx vite build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/api/subscribers", "destination": "/api/subscribers" },
+    { "source": "/api/track", "destination": "/api/track" },
+    { "source": "/api/redirect", "destination": "/api/redirect" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

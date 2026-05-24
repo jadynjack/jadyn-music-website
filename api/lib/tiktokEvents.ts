@@ -120,11 +120,10 @@ export async function sendTikTokEvent(params: TikTokEventParams): Promise<void> 
   }
 }
 
-export function getClientIp(req: any): string {
+export function getClientIp(headers: Headers): string {
   return (
-    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-    req.headers["x-real-ip"] ||
-    req.socket?.remoteAddress ||
+    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    headers.get("x-real-ip") ||
     ""
   );
 }
