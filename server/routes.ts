@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertSubscriberSchema } from "@shared/schema";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import { sendTikTokEvent, getClientIp } from "./lib/tiktokEvents";
+import { subscribeToKlaviyo } from "./lib/klaviyo";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -19,6 +20,7 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Invalid email" });
       }
       const subscriber = await storage.createSubscriber(result.data);
+      subscribeToKlaviyo(result.data.email, result.data.marketingOptIn ?? false).catch(() => {});
       res.json({ success: true, subscriber });
     } catch (error) {
       res.status(500).json({ error: "Failed to subscribe" });
