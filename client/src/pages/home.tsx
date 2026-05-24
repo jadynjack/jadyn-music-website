@@ -1,10 +1,10 @@
 import * as React from "react";
 import { motion } from "framer-motion";
-import { ExternalLink, Music, Play, ChevronRight, Send, Check } from "lucide-react";
+import { ExternalLink, Send, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jpg";
 import appleMusicLogo from "@assets/Apple_Music_icon.svg_1768739002544.png";
@@ -13,36 +13,18 @@ import Footer from "@/components/Footer";
 import { ttqViewContent, ttqLead, generateEventId } from "@/lib/tiktokPixel";
 import { openSmartLink } from "@/lib/smartLinks";
 
-interface StreamStatsData {
-  spotifyStreams: number;
-  appleMusicStreams: number;
-  youtubeMusicStreams: number;
-  totalStreams: number;
-}
-
-interface SiteSettingsData {
-  songTitle: string;
-  songSubtitle: string;
-  spotifyLink: string;
-  appleMusicLink: string;
-  youtubeMusicLink: string;
-  presaveEnabled: boolean;
-  presaveTitle: string;
-  presaveLink: string;
-}
+// ─── SITE CONFIG ──────────────────────────────────────────────────────────────
+const SONG_TITLE = "YOU MAKE ME FEEL";
+const SONG_SUBTITLE = "New single out now on all platforms";
+const SPOTIFY_LINK = "";       // e.g. "https://open.spotify.com/track/..."
+const APPLE_MUSIC_LINK = "";   // e.g. "https://music.apple.com/..."
+const YOUTUBE_MUSIC_LINK = ""; // e.g. "https://music.youtube.com/..."
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function Home() {
   const [email, setEmail] = React.useState("");
   const [marketingOptIn, setMarketingOptIn] = React.useState(false);
   const [subscribed, setSubscribed] = React.useState(false);
-
-  const { data: streamStats } = useQuery<StreamStatsData>({
-    queryKey: ["/api/stream-stats"],
-  });
-
-  const { data: siteSettings } = useQuery<SiteSettingsData>({
-    queryKey: ["/api/site-settings"],
-  });
 
   const subscribeMutation = useMutation({
     mutationFn: async (data: { email: string; marketingOptIn: boolean; eventId?: string }) => {
@@ -83,7 +65,6 @@ export default function Home() {
       >
         {/* Profile / Hero Section */}
         <div className="relative h-[480px] w-full">
-          {/* Image */}
           <div className="absolute inset-0">
             <img 
               src={portraitImage} 
@@ -93,12 +74,11 @@ export default function Home() {
               className="w-full h-full object-cover opacity-90 object-[20%_center]"
               loading="eager"
             />
-            {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#12141c] via-[#12141c]/20 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-b from-[#12141c]/80 via-transparent to-transparent" />
           </div>
 
-          {/* Top Artist Name */}
+          {/* Artist Logo */}
           <div className="absolute top-8 left-0 right-0 flex justify-center z-10">
             <img 
               src={logoImage} 
@@ -109,7 +89,7 @@ export default function Home() {
             />
           </div>
 
-          {/* Song Info (Bottom of Image) */}
+          {/* Song Info */}
           <div className="absolute bottom-0 left-0 right-0 p-8 pt-20 flex flex-col items-center text-center z-10">
             <motion.span 
               initial={{ opacity: 0, y: 10 }}
@@ -126,7 +106,7 @@ export default function Home() {
               transition={{ delay: 0.3 }}
               className="font-display text-5xl font-black italic tracking-tighter text-white mb-2 drop-shadow-xl uppercase"
             >
-              {siteSettings?.songTitle || "RAINBOW"}
+              {SONG_TITLE}
             </motion.h1>
             
             <motion.p 
@@ -135,7 +115,7 @@ export default function Home() {
               transition={{ delay: 0.4 }}
               className="text-white/60 text-sm font-medium tracking-wide"
             >
-              {siteSettings?.songSubtitle || "New single out now on all platforms"}
+              {SONG_SUBTITLE}
             </motion.p>
           </div>
         </div>
@@ -149,19 +129,19 @@ export default function Home() {
               delay={0.5}
               icon={<SpotifyIcon className="w-5 h-5 text-[#1DB954]" />}
               label="Listen on Spotify"
-              href={siteSettings?.spotifyLink}
+              href={SPOTIFY_LINK}
             />
             <LinkItem 
               delay={0.6}
               icon={<img src={appleMusicLogo} alt="Apple Music" className="w-6 h-6 object-contain rounded-[4px]" />}
               label="Listen on Apple Music"
-              href={siteSettings?.appleMusicLink}
+              href={APPLE_MUSIC_LINK}
             />
             <LinkItem 
               delay={0.7}
               icon={<YoutubeIcon className="w-5 h-5 text-[#FF0000]" />}
               label="Listen on YouTube Music"
-              href={siteSettings?.youtubeMusicLink}
+              href={YOUTUBE_MUSIC_LINK}
             />
           </nav>
 

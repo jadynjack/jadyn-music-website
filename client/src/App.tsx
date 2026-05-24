@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
-import Admin from "@/pages/admin";
 import Privacy from "@/pages/privacy";
 import { useEffect } from "react";
 import { initGA } from "./lib/analytics";
@@ -17,7 +16,6 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/admin" component={Admin} />
       <Route path="/privacy" component={Privacy} />
       <Route component={NotFound} />
     </Switch>
