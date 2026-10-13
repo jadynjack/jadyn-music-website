@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { ExternalLink, Send, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import portraitImage from "@assets/PXL_20230416_074727800~4_(1)_1768734324398.jpg";
@@ -47,7 +46,6 @@ const GIG_EXPIRY_HOURS = 6;
 
 export default function Home() {
   const [email, setEmail] = React.useState("");
-  const [marketingOptIn, setMarketingOptIn] = React.useState(false);
   const [subscribed, setSubscribed] = React.useState(false);
 
   const subscribeMutation = useMutation({
@@ -58,7 +56,6 @@ export default function Home() {
     onSuccess: () => {
       setSubscribed(true);
       setEmail("");
-      setMarketingOptIn(false);
     },
   });
 
@@ -70,7 +67,8 @@ export default function Home() {
     if (email && email.includes("@")) {
       const eventId = generateEventId();
       ttqLead(email, "subscribe", "Email Signup", eventId);
-      subscribeMutation.mutate({ email, marketingOptIn, eventId });
+      // Joining the list is the opt-in; the consent wording sits under the field.
+      subscribeMutation.mutate({ email, marketingOptIn: true, eventId });
     }
   };
 
@@ -188,9 +186,7 @@ export default function Home() {
               <div className="flex items-center gap-2 text-primary py-2">
                 <Check className="w-4 h-4" />
                 <span className="text-sm font-bold">
-                  {subscribeMutation.variables?.marketingOptIn
-                    ? "You're in! Check your inbox."
-                    : "Thanks for signing up!"}
+                  You're in! Check your inbox.
                 </span>
               </div>
             ) : (
@@ -214,21 +210,10 @@ export default function Home() {
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
-                <div className="flex items-start gap-2">
-                  <Checkbox 
-                    id="marketing-optin"
-                    checked={marketingOptIn}
-                    onCheckedChange={(checked) => setMarketingOptIn(checked === true)}
-                    className="mt-0.5 border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                    data-testid="checkbox-marketing"
-                  />
-                  <label 
-                    htmlFor="marketing-optin" 
-                    className="text-[10px] text-white/50 leading-relaxed cursor-pointer"
-                  >
-                    I agree to receive news, music releases, and marketing updates from JADYN.
-                  </label>
-                </div>
+                <p className="text-[10px] text-white/50 leading-relaxed" data-testid="text-consent">
+                  By signing up you agree to receive news, music releases, and marketing updates from JADYN. Unsubscribe anytime.{" "}
+                  <a href="/privacy" className="underline hover:text-white/70">Privacy Policy</a>
+                </p>
                 {subscribeMutation.isError && (
                   <p className="text-[10px] text-red-400 leading-relaxed" role="alert" data-testid="text-subscribe-error">
                     Something went wrong signing you up. Please try again.
