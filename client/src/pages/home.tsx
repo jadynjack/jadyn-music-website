@@ -189,7 +189,7 @@ export default function Home() {
                 <Check className="w-4 h-4" />
                 <span className="text-sm font-bold">
                   {subscribeMutation.variables?.marketingOptIn
-                    ? "Nearly there! Check your inbox to confirm."
+                    ? "You're in! Check your inbox."
                     : "Thanks for signing up!"}
                 </span>
               </div>

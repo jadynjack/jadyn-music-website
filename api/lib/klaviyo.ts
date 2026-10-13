@@ -25,9 +25,8 @@ async function klaviyoClientPost(path: string, body: unknown): Promise<void> {
 
 export async function subscribeToKlaviyo(email: string, marketingOptIn: boolean): Promise<void> {
   if (marketingOptIn) {
-    // Subscribes to email marketing and adds to the list. The list uses double
-    // opt-in, so Klaviyo emails a confirmation link first; the profile joins
-    // the list (and enters the welcome flow) once they confirm.
+    // Subscribes to email marketing and adds to the list (single opt-in), which
+    // enters the profile into the welcome flow.
     await klaviyoClientPost("subscriptions", {
       data: {
         type: "subscription",
