@@ -19,6 +19,30 @@ const SONG_SUBTITLE = "New single out now on all platforms";
 const SPOTIFY_LINK = "https://open.spotify.com/album/5rCz29MTo6iwhDVPHwpQgi?si=xFuLkJgYSGe6KmwlmyXG6Q";
 const APPLE_MUSIC_LINK = "https://music.apple.com/au/album/you-make-me-feel-single/1868491302";
 const YOUTUBE_MUSIC_LINK = "https://music.youtube.com/playlist?list=OLAK5uy_n60c8SbLkz7EuNDGONVws5musGETuwrHc";
+
+// Live shows. `start` is the local Sydney start time with its UTC offset
+// (+11:00 during daylight saving, +10:00 otherwise). Each gig hides itself
+// automatically once its night is over (GIG_EXPIRY_HOURS after start); when no
+// gigs remain, the whole Live Shows section disappears.
+type Gig = {
+  name: string;
+  venue: string;
+  city: string;
+  start: string;
+  href: string;
+  status?: "few" | "sold";
+};
+
+const GIGS: Gig[] = [
+  {
+    name: "Mixed Bag #19",
+    venue: "Bootleggers",
+    city: "Newtown",
+    start: "2026-10-28T19:00:00+11:00",
+    href: "https://moshtix.com.au/v2/event/mixed-bag-19-%E2%80%93-jadyn-new-traumas-carnage-flower-mark-poynton/201406",
+  },
+];
+const GIG_EXPIRY_HOURS = 6;
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function Home() {
@@ -51,7 +75,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-0 sm:p-4 bg-[#050608] relative overflow-hidden" role="main">
+    <main className="min-h-screen flex items-start sm:items-center justify-center p-0 sm:p-6 lg:p-10 bg-[#050608] relative overflow-hidden" role="main">
       {/* Background Ambient Effects */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none" />
@@ -61,16 +85,17 @@ export default function Home() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="w-full max-w-full sm:max-w-[380px] bg-[#12141c] rounded-none sm:rounded-[32px] border-0 sm:border border-white/5 shadow-2xl overflow-hidden relative mx-auto"
+        className="w-full max-w-full sm:max-w-[560px] lg:max-w-[1080px] bg-[#12141c] rounded-none sm:rounded-[32px] border-0 sm:border border-white/5 shadow-2xl overflow-hidden relative mx-auto"
       >
+        <div className="lg:grid lg:grid-cols-2 lg:gap-8">
         {/* Profile / Hero Section */}
-        <div className="relative h-[480px] w-full">
+        <div className="relative h-[480px] sm:h-[560px] lg:h-auto lg:min-h-[720px] w-full">
           <div className="absolute inset-0">
             <img 
               src={portraitImage} 
               alt="JADYN – indie pop artist from Sydney" 
-              width={380}
-              height={480}
+              width={560}
+              height={720}
               className="w-full h-full object-cover opacity-90 object-[20%_center]"
               loading="eager"
             />
@@ -90,7 +115,7 @@ export default function Home() {
           </div>
 
           {/* Song Info */}
-          <div className="absolute bottom-0 left-0 right-0 p-8 pt-20 flex flex-col items-center text-center z-10">
+          <div className="absolute bottom-0 left-0 right-0 p-8 pt-20 lg:pt-8 lg:bottom-auto lg:top-1/2 lg:-translate-y-[35%] flex flex-col items-center text-center z-10">
             <motion.span 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -104,7 +129,7 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
-              className="font-display text-5xl font-black italic tracking-tighter text-white mb-2 drop-shadow-xl uppercase"
+              className="font-display text-5xl lg:text-[64px] lg:leading-none font-black italic tracking-tighter text-white mb-2 drop-shadow-xl uppercase"
             >
               {SONG_TITLE}
             </motion.h1>
@@ -121,7 +146,7 @@ export default function Home() {
         </div>
 
         {/* Content Section */}
-        <div className="px-5 pb-8 space-y-5">
+        <div className="px-5 pb-8 sm:px-8 sm:pb-10 lg:py-10 lg:pl-2 lg:pr-10 flex flex-col justify-center gap-5">
           
           {/* Streaming Links */}
           <nav aria-label="Streaming platforms" className="space-y-3">
@@ -145,6 +170,8 @@ export default function Home() {
             />
           </nav>
 
+          <LiveShows />
+
           {/* Email Sign Up */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -160,7 +187,11 @@ export default function Home() {
             {subscribed ? (
               <div className="flex items-center gap-2 text-primary py-2">
                 <Check className="w-4 h-4" />
-                <span className="text-sm font-bold">You're in! Check your inbox.</span>
+                <span className="text-sm font-bold">
+                  {subscribeMutation.variables?.marketingOptIn
+                    ? "Nearly there! Check your inbox to confirm."
+                    : "Thanks for signing up!"}
+                </span>
               </div>
             ) : (
               <div className="space-y-3">
@@ -198,15 +229,93 @@ export default function Home() {
                     I agree to receive news, music releases, and marketing updates from JADYN.
                   </label>
                 </div>
+                {subscribeMutation.isError && (
+                  <p className="text-[10px] text-red-400 leading-relaxed" role="alert" data-testid="text-subscribe-error">
+                    Something went wrong signing you up. Please try again.
+                  </p>
+                )}
               </div>
             )}
           </motion.div>
 
         </div>
-        
+        </div>
+
         <Footer />
       </motion.div>
     </main>
+  );
+}
+
+const gigMonth = new Intl.DateTimeFormat("en-AU", { month: "short", timeZone: "Australia/Sydney" });
+const gigDay = new Intl.DateTimeFormat("en-AU", { day: "2-digit", timeZone: "Australia/Sydney" });
+const gigWhen = new Intl.DateTimeFormat("en-AU", { weekday: "short", hour: "numeric", minute: "2-digit", timeZone: "Australia/Sydney" });
+
+function LiveShows() {
+  const now = Date.now();
+  const upcoming = GIGS
+    .filter((g) => Date.parse(g.start) + GIG_EXPIRY_HOURS * 3_600_000 > now)
+    .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+
+  if (upcoming.length === 0) return null;
+
+  return (
+    <motion.section
+      aria-labelledby="gigs-title"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.8 }}
+      className="bg-[#1a1d26] rounded-2xl p-5 border border-white/5 space-y-4"
+    >
+      <div className="space-y-1">
+        <h3 id="gigs-title" className="text-sm font-bold text-white uppercase tracking-wider">Live Shows</h3>
+        <p className="text-[10px] text-white/40 leading-relaxed font-medium">Catch JADYN live.</p>
+      </div>
+
+      <ul className="space-y-2">
+        {upcoming.map((g) => {
+          const date = new Date(g.start);
+          const sold = g.status === "sold";
+          const trackingId = `tickets-${g.name}`.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+          return (
+            <li
+              key={g.start + g.venue}
+              className={`flex items-center gap-3 p-3 rounded-xl bg-black/20 border border-white/5 transition-colors hover:bg-[#20242e] hover:border-white/10 ${sold ? "opacity-60" : ""}`}
+              data-testid={`gig-${trackingId}`}
+            >
+              <div className="w-11 shrink-0 flex flex-col items-center leading-none">
+                <span className={`text-[10px] font-bold tracking-widest uppercase ${sold ? "text-white/50" : "text-primary"}`}>
+                  {gigMonth.format(date).replace(".", "")}
+                </span>
+                <span className="font-display text-[22px] font-black italic tracking-tighter text-white mt-1">
+                  {gigDay.format(date)}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                <span className="text-sm font-semibold text-white/90 truncate">{g.name}</span>
+                <span className="text-xs text-white/50 leading-snug">
+                  {g.venue}, {g.city} · {gigWhen.format(date).replace(/:00/, "").replace(/\s?([ap]m)/i, "$1")}
+                  {g.status === "few" && <span className="text-primary"> · Few left</span>}
+                </span>
+              </div>
+              {sold ? (
+                <span className="text-[10px] font-bold tracking-widest uppercase text-white/40 px-2">Sold out</span>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={() => openSmartLink(g.href, `Tickets ${g.name}`, trackingId)}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold active:scale-95"
+                  aria-label={`Tickets for ${g.name} at ${g.venue}, ${g.city}`}
+                  data-testid={`button-${trackingId}`}
+                >
+                  Tickets
+                </Button>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </motion.section>
   );
 }
 
